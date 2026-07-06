@@ -1,4 +1,4 @@
-## Архитектура и модель данных Multi-Agent Mass Recruitment Hub
+# Архитектура и модель данных Multi-Agent Mass Recruitment Hub
 
 ---
 

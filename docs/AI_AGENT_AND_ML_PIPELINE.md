@@ -1,4 +1,4 @@
-## Искусственный интеллект, агенты и ML-пайплайн Multi-Agent Mass Recruitment Hub
+# Искусственный интеллект, агенты и ML-пайплайн Multi-Agent Mass Recruitment Hub
 
 ---
 
