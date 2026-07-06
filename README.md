@@ -393,7 +393,7 @@ flowchart LR
 
 | Документ | Описание |
 | :--- | :--- |
-| 👨‍💻 **[DEVELOPER_ONBOARDING_AND_CODE_REFERENCE.md](./docs/./docs/DEVELOPER_ONBOARDING_AND_CODE_REFERENCE.md)** | Онбординг разработчиков: быстрый старт (1 час), структура проекта, справочник по ключевым файлам, code style, git flow, contribution guide, архитектурное ревью и технический долг. |
+| 👨‍💻 **[DEVELOPER_ONBOARDING_AND_CODE_REFERENCE.md](./docs/DEVELOPER_ONBOARDING_AND_CODE_REFERENCE.md)** | Онбординг разработчиков: быстрый старт (1 час), структура проекта, справочник по ключевым файлам, code style, git flow, contribution guide, архитектурное ревью и технический долг. |
 
 ---
 
