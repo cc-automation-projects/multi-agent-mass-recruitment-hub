@@ -28,13 +28,13 @@ Production-окружение Multi-Agent Mass Recruitment Hub развёрну�
 
 ```mermaid
 flowchart TB
-    subgraph "Yandex Cloud"
-        subgraph "VPC"
-            subgraph "Managed K8s Cluster"
-                subgraph "Ingress"
+    subgraph Cloud["☁️ Yandex Cloud"]
+        subgraph VPC["🌐 VPC"]
+            subgraph K8s["🚀 Managed K8s Cluster"]
+                subgraph Ingress["🔀 Ingress"]
                     NGINX["NGINX Ingress Controller"]
                 end
-                subgraph "Applications"
+                subgraph Apps["⚙️ Applications"]
                     API["API Gateway (FastAPI) - 3 реплики"]
                     WORKER["Celery Workers - HPA"]
                     BEAT["Celery Beat"]
@@ -43,7 +43,7 @@ flowchart TB
                     FS["FreeSWITCH - 3 реплики (StatefulSet)"]
                     QDRANT["Qdrant - 4 шарда × 2 реплики"]
                 end
-                subgraph "Monitoring & Logging"
+                subgraph Observability["📊 Monitoring & Logging"]
                     PROM["Prometheus"]
                     GRAF["Grafana"]
                     ALERT["Alertmanager"]
@@ -52,13 +52,13 @@ flowchart TB
                     KIBANA["Kibana"]
                 end
             end
-            subgraph "Managed Services"
+            subgraph Managed["🗄️ Managed Services"]
                 PG[("PostgreSQL Cluster")]
                 REDIS[("Redis Cluster")]
                 S3[("Object Storage")]
             end
         end
-        ALB["Yandex ALB"]
+        ALB["🌍 Yandex ALB"]
     end
 
     ALB --> NGINX
@@ -84,6 +84,34 @@ flowchart TB
     WORKER --> LOGSTASH
     LOGSTASH --> ELASTIC
     ELASTIC --> KIBANA
+
+    %% 🌈 Цветовая схема
+    style Cloud fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#1a237e
+    style VPC fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    style K8s fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    style Ingress fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style Apps fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    style Observability fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    style Managed fill:#fce4ec,stroke:#c62828,stroke-width:2px,color:#b71c1c
+
+    style NGINX fill:#a5d6a7,stroke:#2e7d32,color:#1b5e20
+    style API fill:#64b5f6,stroke:#1565c0,color:#0d47a1
+    style WORKER fill:#64b5f6,stroke:#1565c0,color:#0d47a1
+    style BEAT fill:#64b5f6,stroke:#1565c0,color:#0d47a1
+    style FLOWER fill:#64b5f6,stroke:#1565c0,color:#0d47a1
+    style LK fill:#4dd0e1,stroke:#00838f,color:#004d40
+    style FS fill:#4dd0e1,stroke:#00838f,color:#004d40
+    style QDRANT fill:#ffb74d,stroke:#e65100,color:#bf360c
+    style PROM fill:#ef9a9a,stroke:#c62828,color:#b71c1c
+    style GRAF fill:#ef9a9a,stroke:#c62828,color:#b71c1c
+    style ALERT fill:#ef9a9a,stroke:#c62828,color:#b71c1c
+    style ELASTIC fill:#ce93d8,stroke:#6a1b9a,color:#4a148c
+    style LOGSTASH fill:#ce93d8,stroke:#6a1b9a,color:#4a148c
+    style KIBANA fill:#ce93d8,stroke:#6a1b9a,color:#4a148c
+    style PG fill:#e57373,stroke:#c62828,color:#b71c1c
+    style REDIS fill:#e57373,stroke:#c62828,color:#b71c1c
+    style S3 fill:#e57373,stroke:#c62828,color:#b71c1c
+    style ALB fill:#90caf9,stroke:#1565c0,color:#0d47a1
 ```
 
 **Взаимодействие компонентов:**
