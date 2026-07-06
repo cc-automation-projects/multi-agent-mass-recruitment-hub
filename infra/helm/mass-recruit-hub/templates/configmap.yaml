@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mass-recruit-hub.fullname" . }}-config
+  labels:
+    {{- include "mass-recruit-hub.labels" . | nindent 4 }}
+data:
+  ENVIRONMENT: {{ .Values.config.environment | quote }}
+  LLM_ENDPOINT: {{ .Values.config.llmEndpoint | quote }}
+  LLM_MODEL: {{ .Values.config.llmModel | quote }}
+  AUDIT_LOG_RETENTION_DAYS: {{ .Values.config.auditLogRetentionDays | quote }}
+  CONSENT_REQUIRED: {{ .Values.config.consentRequired | quote }}
+  SOFT_DELETE_AUDIT: {{ .Values.config.softDeleteAudit | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}

@@ -1,0 +1,48 @@
+groups:
+  - name: massrecruit_alerts
+    interval: 30s
+    rules:
+      - alert: HighWER
+        expr: mrh_wer > 8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Word Error Rate exceeded 8%"
+          description: "WER is {{ $value }}%"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(mrh_pipeline_duration_seconds_bucket{agent_stage="interviewer_conduct"}[5m])) by (le)) > 3
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Voice response latency > 3 seconds"
+          description: "P95 latency is {{ $value }}s"
+
+      - alert: FairnessViolation
+        expr: mrh_fairness_disparate_impact < 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disparate impact below 0.8"
+          description: "Value is {{ $value }}"
+
+      - alert: HighFalseRejectionRate
+        expr: mrh_fairness_false_rejection_rate > 0.02
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "False rejection rate > 2%"
+          description: "FRR is {{ $value }}"
+
+      - alert: CampaignQueueTooLong
+        expr: mrh_queue_depth{queue_name="campaign"} > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Campaign queue depth > 100"
+          description: "Queue length {{ $value }}"

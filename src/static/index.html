@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MassRecruitHub Admin</title>
+</head>
+<body>
+    <h1>Управление весами модели propensity</h1>
+    <form id="weightsForm">
+        <label>Вес опыта (experience):</label>
+        <input type="number" step="0.01" name="experience" value="0.3"><br>
+        <label>Вес образования (education):</label>
+        <input type="number" step="0.01" name="education" value="0.2"><br>
+        <label>Вес региона (region):</label>
+        <input type="number" step="0.01" name="region" value="0.1"><br>
+        <label>Вес соответствия навыков (skill_match):</label>
+        <input type="number" step="0.01" name="skill_match" value="0.4"><br>
+        <button type="submit">Сохранить</button>
+    </form>
+    <div id="result"></div>
+    <script>
+        document.getElementById('weightsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const weights = Object.fromEntries(formData.entries());
+            const resp = await fetch('/admin/model/weights', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({weights})
+            });
+            const result = await resp.json();
+            document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+        });
+        fetch('/admin/model/weights').then(r => r.json()).then(data => {
+            for (const [k, v] of Object.entries(data)) {
+                const input = document.querySelector(`[name="${k}"]`);
+                if (input) input.value = v;
+            }
+        });
+    </script>
+</body>
+</html>

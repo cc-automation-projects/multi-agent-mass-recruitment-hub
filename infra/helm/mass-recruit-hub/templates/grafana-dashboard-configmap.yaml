@@ -1,0 +1,11 @@
+{{- if .Values.monitoring.grafana.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.monitoring.grafana.dashboard.configMapName }}
+  labels:
+    {{- include "mass-recruit-hub.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  mass-recruit-hub.json: {{ .Files.Get "infra/grafana/dashboard-mass-recruit-hub.json" | quote }}
+{{- end }}

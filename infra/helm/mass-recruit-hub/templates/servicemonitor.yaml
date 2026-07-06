@@ -1,0 +1,17 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "mass-recruit-hub.fullname" . }}
+  labels:
+    {{- include "mass-recruit-hub.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "mass-recruit-hub.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+{{- end }}

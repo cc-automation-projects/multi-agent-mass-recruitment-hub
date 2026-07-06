@@ -1,0 +1,198 @@
+[project]
+name = "mass-recruit-hub"
+version = "0.2.0"
+description = "Multi-Agent Mass Recruitment Hub with voice and text interface (LangGraph + LiveKit)"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Multi-Agent Mass Recruitment Hub Team" },
+]
+
+dependencies = [
+    # Agent orchestration
+    "langgraph>=0.3.0",
+
+    # Voice pipeline
+    "livekit-agents>=1.5.0",
+    "livekit-plugins-openai>=0.2",
+    "livekit-api>=0.15",
+
+    # Vector storage
+    "qdrant-client>=1.12.0",
+
+    # Auth
+    "python-jose[cryptography]>=3.3",
+    "passlib[bcrypt]>=1.7",
+    "python-multipart>=0.0.6",
+
+    # Validation & config
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "python-dotenv>=1.0",
+
+    # Databases
+    "redis>=5.0",
+    "psycopg2-binary>=2.9",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+
+    # PII anonymization (152-FZ compliance)
+    "presidio-analyzer>=2.2",
+    "presidio-anonymizer>=2.2",
+    "spacy>=3.7",
+
+    # Async file operations (ESL client)
+    "aiofiles>=23.0",
+
+    # Calendar integrations
+    "google-api-python-client>=2.108",
+    "google-auth-oauthlib>=1.2",
+    "yandexcloud>=0.270",
+
+    # Retry logic for external APIs
+    "tenacity>=8.2",
+
+    # HTTP for Logstash direct input (optional)
+    "requests>=2.31",
+
+    # Async HTTP (messengers, APIs)
+    "httpx>=0.27",
+    "aiogram>=3.0",
+    "vk-api>=12.0",
+
+    # LLM inference client
+    "openai>=1.0",
+
+    # ML
+    "catboost>=1.2",
+    "mlflow>=2.15",
+    "scikit-learn>=1.5",
+
+    # Memory
+    "mem0ai>=0.1",
+
+    # Structured logging (152-FZ audit requirement)
+    "structlog>=24.1",
+
+    # Semantic cache embedding
+    "sentence-transformers>=3.0",
+
+    # ASR (faster-whisper on-premise)
+    "faster-whisper>=1.0",
+    "ctranslate2>=4.0",
+
+    # TTS (Silero v5)
+    "torch>=2.0",
+    "torchaudio>=2.0",
+    "silero-tts@git+https://github.com/snakers4/silero-models.git",
+
+    # Audio conversion (voice messages from messengers)
+    "pydub>=0.25",
+
+    # Video analysis (optional, for Agent-Interviewer)
+    "opencv-python>=4.9",
+    "deepface>=0.0.79",
+
+    # Prosody analysis (optional, for Agent-Interviewer)
+    "librosa>=0.10",
+    "soundfile>=0.12",
+
+    # Background tasks
+    "celery>=5.3",
+    "flower>=2.0",
+
+    # Monitoring
+    "prometheus-client>=0.20",
+
+    # vLLM (GPU-required for production, stub for CPU development)
+    "vllm>=0.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "mypy>=1.10",
+    "ruff>=0.5",
+    "pytest-cov>=5.0",
+    "pytest-mock>=3.14",
+    "pre-commit>=3.7",
+    "bandit>=1.7",
+]
+prod = [
+    "gunicorn>=22.0",
+    "uvloop>=0.20",
+]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_unimported = false
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "N", "UP", "B", "SIM", "ARG", "C4"]
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI: Depends() — стандарт фреймворка
+"src/api/admin.py" = ["B008", "ARG001"]
+"src/api/auth.py" = ["B008", "B904"]
+"src/api/campaigns.py" = ["B008"]
+"src/api/candidates.py" = ["B008"]
+"src/api/deletion.py" = ["B008"]
+"src/api/deps.py" = ["B008", "B904"]
+"src/api/messenger_webhook.py" = ["B904", "E501"]
+
+# Celery: сигналы требуют неиспользуемые параметры
+"src/celery_metrics.py" = ["ARG001"]
+"src/tasks/campaign_tasks.py" = ["B904"]
+"src/tasks/import_tasks.py" = ["B904"]
+
+# structlog-процессоры
+"src/core/audit_logger.py" = ["ARG001"]
+
+# Остальные: параметры для будущего использования
+"src/agents/analyst/nodes.py" = ["ARG001"]
+"src/agents/coordinator/nodes.py" = ["E501"]
+"src/agents/interviewer/nodes.py" = ["E501"]
+"src/agents/interviewer/prosody.py" = ["F841"]
+"src/agents/orchestrator.py" = ["F841"]
+"src/services/agent_runner.py" = ["ARG001"]
+"src/services/calendar_service.py" = ["ARG001"]
+"src/services/deletion_service.py" = ["ARG001", "E501"]
+"src/services/biometry_consent.py" = ["E501"]
+"src/services/model_weights_service.py" = ["E501"]
+"src/services/semantic_cache.py" = ["E501"]
+"src/telephony/esl_client.py" = ["ARG002", "E501"]
+"src/telephony/freeswitch_client.py" = ["ARG001"]
+"src/voice/asr.py" = ["ARG002"]
+"src/voice/tts.py" = ["ARG002", "F841"]
+
+# Тесты: длинные строки в assert/mock
+"tests/*.py" = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"
+markers = [
+    "unit: unit test (no external services)",
+    "asyncio: asyncio-based test",
+    "integration: integration test (requires external services)",
+    "e2e: end-to-end test (full pipeline)",
+]
+
+[project.scripts]
+mrh-api = "src.main:app"
+mrh-propensity = "src.services.propensity_dialer:main"
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"

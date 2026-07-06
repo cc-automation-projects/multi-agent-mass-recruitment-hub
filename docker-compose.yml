@@ -1,0 +1,274 @@
+version: "3.9"
+
+# =============================================================================
+# Multi-Agent Mass Recruitment Hub — Local Development Stack
+# =============================================================================
+# WARNING: This configuration is for LOCAL DEVELOPMENT only.
+# In production, all services must be deployed in Yandex Cloud / MTS Cloud
+# with FSTEC-certified security controls.
+# PII and voice recordings must NEVER leave the Russian Federation.
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: massrecruithub-pg
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: massrecruithub
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/docker/init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d massrecruithub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: massrecruithub-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: massrecruithub-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev      # development Dockerfile
+    container_name: massrecruithub-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://user:password@postgres:5432/massrecruithub
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: http://qdrant:6333
+      LLM_ENDPOINT: ${LLM_ENDPOINT:-https://llm.api.yandex.cloud/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      MAX_API_KEY: ${MAX_API_KEY:-}
+      VK_API_TOKEN: ${VK_API_TOKEN:-}
+      MLFLOW_TRACKING_URI: ${MLFLOW_TRACKING_URI:-http://mlflow:5000}
+      ENVIRONMENT: development
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./evals:/app/evals
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.15.1
+    container_name: massrecruithub-mlflow
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql://user:password@postgres:5432/mlflow
+      MLFLOW_ARTIFACT_URI: ./mlflow_artifacts
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://user:password@postgres:5432/mlflow --default-artifact-root ./mlflow_artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: massrecruithub-livekit
+    restart: unless-stopped
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+    environment:
+      - LIVEKIT_KEYS=dev_key:dev_secret
+      - LIVEKIT_HOST=localhost
+    command: --config /etc/livekit/livekit.yaml
+    volumes:
+      - ./infra/livekit/livekit.yaml:/etc/livekit/livekit.yaml
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: massrecruithub-celery-worker
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+      - qdrant
+    environment:
+      DATABASE_URL: postgresql+psycopg2://user:password@postgres:5432/massrecruithub
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: http://qdrant:6333
+      ENVIRONMENT: development
+    command: celery -A src.celery_app worker --loglevel=info
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: massrecruithub-celery-beat
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      DATABASE_URL: postgresql+psycopg2://user:password@postgres:5432/massrecruithub
+      REDIS_URL: redis://redis:6379/0
+    command: celery -A src.celery_app beat --loglevel=info
+
+  flower:
+    image: mher/flower:latest
+    container_name: massrecruithub-flower
+    restart: unless-stopped
+    ports:
+      - "5555:5555"
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    depends_on:
+      - redis
+      - celery-worker
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: massrecruithub-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./infra/prometheus/alerts.yaml:/etc/prometheus/alerts.yaml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - app
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: massrecruithub-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./infra/grafana/dashboard-mass-recruit-hub.json:/etc/grafana/provisioning/dashboards/massrecruit.json
+      - ./infra/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+    depends_on:
+      - prometheus
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: massrecruithub-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: massrecruithub-logstash
+    ports:
+      - "5044:5044"
+      - "8080:8080"
+    volumes:
+      - ./infra/elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTIC_USER=
+      - ELASTIC_PASSWORD=
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: massrecruithub-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.11.0
+    container_name: massrecruithub-filebeat
+    user: root
+    volumes:
+      - ./infra/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/app/logs:ro
+    depends_on:
+      - logstash
+
+  freeswitch:
+    image: ghcr.io/sangoma/docker-freeswitch:latest
+    container_name: massrecruithub-freeswitch
+    restart: unless-stopped
+    ports:
+      - "5060:5060/udp"     # SIP
+      - "5060:5060/tcp"
+      - "8021:8021/tcp"     # ESL
+      - "7443:7443/tcp"     # WebRTC
+    volumes:
+      - ./infra/docker/freeswitch/conf:/etc/freeswitch/conf
+      - ./infra/docker/freeswitch/sounds:/usr/share/freeswitch/sounds
+    environment:
+      ESL_PASSWORD: ClueCon
+    healthcheck:
+      test: ["CMD", "fs_cli", "-x", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+  qdrant_storage:
+    driver: local
+  esdata:
+    driver: local
