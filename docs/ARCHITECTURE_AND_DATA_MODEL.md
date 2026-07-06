@@ -151,49 +151,71 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    subgraph API[API Layer]
-        AUTH[[auth.py]]
-        CAMP[[campaigns.py]]
-        CAND[[candidates.py]]
-        AGENTS[agents.py]
-        ANALYTICS[analytics.py]
-        ADMIN[[admin.py]]
-        DEL[[deletion.py]]
-        WEBHOOKS[webhooks]
-        WS[WebSocket]
+    subgraph API["🌐 API Layer"]
+        direction LR
+        AUTH["auth.py"] --- CAMP["campaigns.py"] --- CAND["candidates.py"] --- AGENTS["agents.py"] --- ANALYTICS["analytics.py"] --- ADMIN["admin.py"] --- DEL["deletion.py"] --- WEBHOOKS["webhooks"] --- WS["WebSocket"]
     end
 
-    subgraph Services[Services Layer]
-        CS[call_service]
-        CAMS[campaign_service]
-        TS[transcription_service]
-        VS[validation_service]
-        CRMS[crm_service]
-        RS[rollback_service]
-        AS[analytics_service]
-        CAL[calendar_service]
-        HS[handoff_service]
-        DS[deletion_service]
-        SC[semantic_cache]
-        PD[propensity_dialer]
+    subgraph Services["⚙️ Services Layer"]
+        direction LR
+        CS["call_service"] --- CAMS["campaign_service"] --- TS["transcription_service"] --- VS["validation_service"] --- CRMS["crm_service"] --- RS["rollback_service"] --- AS["analytics_service"] --- CAL["calendar_service"] --- HS["handoff_service"] --- DS["deletion_service"] --- SC["semantic_cache"] --- PD["propensity_dialer"]
     end
 
-    subgraph Integrations[Integrations]
-        HH[hh.ru]
-        AV[Avito]
-        MAX[MAX]
-        TG[Telegram]
-        VK[VK]
-        ONES[1С:ЗУП]
-        GCAL[Google Calendar]
-        YCAL[Yandex Calendar]
+    subgraph Integrations["🔗 Integrations"]
+        direction LR
+        HH["hh.ru"] --- AV["Avito"] --- MAX["MAX"] --- TG["Telegram"] --- VK["VK"] --- ONES["1С:ЗУП"] --- GCAL["Google Calendar"] --- YCAL["Yandex Calendar"]
+    end
+
+    subgraph Storage["💾 Storage"]
+        direction LR
+        Models[("Models")] --- Qdrant[("Qdrant")] --- Redis[("Redis")]
     end
 
     API --> Services
     Services --> Integrations
-    Services --> Models[(Models)]
-    Services --> Qdrant[(Qdrant)]
-    Services --> Redis[(Redis)]
+    Services --> Storage
+
+    %% Пастельная цветовая схема
+    style API fill:#f0f4ff,stroke:#90caf9,stroke-width:1.5px
+    style Services fill:#f5f0ff,stroke:#ce93d8,stroke-width:1.5px
+    style Integrations fill:#fff5f0,stroke:#ffcc80,stroke-width:1.5px
+    style Storage fill:#f0f8f0,stroke:#a5d6a7,stroke-width:1.5px
+
+    style AUTH fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style CAMP fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style CAND fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style AGENTS fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style ANALYTICS fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style ADMIN fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style DEL fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style WEBHOOKS fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style WS fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+
+    style CS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style CAMS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style TS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style VS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style CRMS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style RS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style AS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style CAL fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style HS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style DS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style SC fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style PD fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+
+    style HH fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style AV fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style MAX fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style TG fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style VK fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style ONES fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style GCAL fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style YCAL fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+
+    style Models fill:#c8e6c9,stroke:#81c784,color:#2e7d32
+    style Qdrant fill:#c8e6c9,stroke:#81c784,color:#2e7d32
+    style Redis fill:#c8e6c9,stroke:#81c784,color:#2e7d32
 ```
 
 ## 2.3. Диаграмма потоков данных (Sequence Diagram)
