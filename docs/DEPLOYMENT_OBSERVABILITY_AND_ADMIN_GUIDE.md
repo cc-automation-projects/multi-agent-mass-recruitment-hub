@@ -32,33 +32,33 @@ flowchart TB
         subgraph "VPC"
             subgraph "Managed K8s Cluster"
                 subgraph "Ingress"
-                    NGINX[NGINX Ingress Controller]
+                    NGINX["NGINX Ingress Controller"]
                 end
                 subgraph "Applications"
-                    API[API Gateway (FastAPI) - 3 реплики]
-                    WORKER[Celery Workers - HPA]
-                    BEAT[Celery Beat]
-                    FLOWER[Flower]
-                    LK[LiveKit - 2 реплики]
-                    FS[FreeSWITCH - 3 реплики (StatefulSet)]
-                    QDRANT[Qdrant - 4 шарда × 2 реплики]
+                    API["API Gateway (FastAPI) - 3 реплики"]
+                    WORKER["Celery Workers - HPA"]
+                    BEAT["Celery Beat"]
+                    FLOWER["Flower"]
+                    LK["LiveKit - 2 реплики"]
+                    FS["FreeSWITCH - 3 реплики (StatefulSet)"]
+                    QDRANT["Qdrant - 4 шарда × 2 реплики"]
                 end
                 subgraph "Monitoring & Logging"
-                    PROM[Prometheus]
-                    GRAF[Grafana]
-                    ALERT[Alertmanager]
-                    ELASTIC[Elasticsearch]
-                    LOGSTASH[Logstash]
-                    KIBANA[Kibana]
+                    PROM["Prometheus"]
+                    GRAF["Grafana"]
+                    ALERT["Alertmanager"]
+                    ELASTIC["Elasticsearch"]
+                    LOGSTASH["Logstash"]
+                    KIBANA["Kibana"]
                 end
             end
             subgraph "Managed Services"
-                PG[(PostgreSQL Cluster)]
-                REDIS[(Redis Cluster)]
-                S3[(Object Storage)]
+                PG[("PostgreSQL Cluster")]
+                REDIS[("Redis Cluster")]
+                S3[("Object Storage")]
             end
         end
-        ALB[Yandex ALB]
+        ALB["Yandex ALB"]
     end
 
     ALB --> NGINX
