@@ -74,47 +74,233 @@ curl http://localhost:8000/health
 
 ## 3. Структура проекта
 
-### 3.1. Диаграмма структуры (Mermaid)
+### 3.1. Дерево проекта (по логическим группам)
 
-```mermaid
-flowchart TB
-    subgraph "Корень проекта"
-        README["README.md"] --> SRC["src/"]
-        README --> INFRA["infra/"]
-        README --> TESTS["tests/"]
-        README --> DOCS["docs/"]
-        README --> DOCKER["docker-compose.yml"]
-        README --> PYPROJECT["pyproject.toml"]
-    end
+#### Корень проекта
 
-    subgraph "src/ (основной код)"
-        SRC --> API["api/"]
-        SRC --> AGENTS["agents/"]
-        SRC --> CORE["core/"]
-        SRC --> PII["pii/"]
-        SRC --> VOICE["voice/"]
-        SRC --> TELEPHONY["telephony/"]
-        SRC --> SERVICES["services/"]
-        SRC --> LLM["llm/"]
-        SRC --> TASKS["tasks/"]
-        SRC --> INTEGRATIONS["integrations/"]
-        SRC --> OPTIMIZATION["optimization/"]
-        SRC --> BOT["bot/"]
-        SRC --> STATIC["static/"]
-        SRC --> MAIN["main.py"]
-        SRC --> CELERY["celery_app.py"]
-    end
+```
+mass-recruit-hub/
+├── pyproject.toml              # Зависимости Python, линтеры, метаданные
+├── Dockerfile                  # Production-сборка (multi-stage)
+├── Dockerfile.dev              # Dev-сборка
+├── docker-compose.yml          # Локальный стек (БД, LiveKit, FreeSWITCH, ELK, мониторинг)
+├── alembic.ini                 # Конфигурация Alembic (миграции БД)
+├── pytest.ini                  # Настройки pytest
+├── .env.example                # Шаблон переменных окружения
+├── .gitignore                  # Исключения Git
+├── README.md                   # Общее описание проекта
+└── LICENSE                     # Лицензия
+```
 
-    subgraph "infra/ (инфраструктура)"
-        INFRA --> HELM["helm/"]
-        INFRA --> TERRAFORM["terraform/"]
-        INFRA --> DOCKER_FS["docker/freeswitch/"]
-        INFRA --> LIVEKIT["livekit/"]
-        INFRA --> PROMETHEUS["prometheus/"]
-        INFRA --> GRAFANA["grafana/"]
-        INFRA --> ELK["elk/"]
-        INFRA --> FILEBEAT["filebeat/"]
-    end
+#### Основной код — `src/`
+
+```
+src/
+├── main.py                     # Точка входа FastAPI (роутеры, CORS, /health, /metrics)
+├── celery_app.py               # Celery-приложение (брокер Redis)
+├── celery_metrics.py           # Prometheus-метрики для Celery
+│
+├── api/                        # FastAPI-роутеры и middleware
+│   ├── auth.py                 #   JWT-аутентификация (register, login, refresh)
+│   ├── campaigns.py            #   CRUD кампаний
+│   ├── candidates.py           #   Кандидаты (с маскированием PII)
+│   ├── admin.py                #   Админка: импорт, веса модели
+│   ├── deletion.py             #   Право на забвение (152-ФЗ)
+│   ├── deps.py                 #   Зависимости: БД, текущий пользователь, админ
+│   ├── messenger_webhook.py    #   Вебхук мессенджеров (MAX, Telegram, VK)
+│   ├── telegram_webhook.py     #   Вебхук Telegram-бота
+│   └── rpa_webhook.py          #   Вебхук для RPA-интеграции
+│
+├── agents/                     # AI-агенты на LangGraph
+│   ├── orchestrator.py         #   Оркестратор кампаний
+│   ├── screener/               #   Агент-скринер (скрининг кандидатов)
+│   │   ├── graph.py            #     Определение графа
+│   │   └── nodes.py            #     Узлы: проверка согласия, анализ резюме, оценка
+│   ├── interviewer/            #   Агент-интервьюер (голосовое интервью)
+│   │   ├── graph.py            #     Определение графа
+│   │   ├── nodes.py            #     Узлы: вопросы, диалог, просодия, видео
+│   │   ├── prompts.py          #     Промпты для LLM
+│   │   ├── prosody.py          #     Анализ просодии (librosa)
+│   │   ├── video_analyzer.py   #     Видеоанализ (OpenCV + DeepFace)
+│   │   └── face_utils.py       #     Утилиты для работы с лицом
+│   ├── coordinator/            #   Агент-координатор (маршрутизация)
+│   │   ├── graph.py            #     Определение графа
+│   │   └── nodes.py            #     Узлы: роутинг, handoff, аналитика
+│   ├── onboarding/             #   Агент-онбординг (приём нового сотрудника)
+│   │   ├── graph.py            #     Определение графа
+│   │   └── nodes.py            #     Узлы: документы, верификация, календарь
+│   └── analyst/                #   Агент-аналитик (метрики и fairness)
+│       ├── graph.py            #     Определение графа
+│       ├── nodes.py            #     Узлы: метрики, fairness, отчёты
+│       └── fairness_metrics.py #     Метрики fairness (demographic parity, DI)
+│
+├── core/                       # Базовые компоненты
+│   ├── config.py               #   Pydantic-конфигурация (из .env)
+│   ├── models.py               #   Pydantic-модели данных
+│   ├── database.py             #   Асинхронный SQLAlchemy (PostgreSQL)
+│   ├── state.py                #   Состояние графа LangGraph (AgentState)
+│   ├── metrics.py              #   Prometheus-метрики
+│   ├── audit_logger.py         #   Аудит-лог (structlog, 152-ФЗ ст. 18.1)
+│   └── logging_config.py       #   Настройка логирования (JSON, Filebeat)
+│
+├── services/                   # Бизнес-сервисы
+│   ├── campaign_service.py     #   CRUD кампаний
+│   ├── deletion_service.py     #   Каскадное удаление (право на забвение)
+│   ├── handoff_service.py      #   Омниканальный handoff (Redis)
+│   ├── hr_integrations.py      #   Интеграции с HR-системами и мессенджерами
+│   ├── import_resumes.py       #   Импорт резюме (hh.ru, Avito)
+│   ├── propensity_dialer.py    #   Пропенсити-дайлер (CatBoost)
+│   ├── semantic_cache.py       #   MVR-кэш для LLM (Qdrant)
+│   ├── qdrant_storage.py       #   Работа с Qdrant (векторное хранение)
+│   ├── calendar_service.py     #   Интеграция с календарями
+│   ├── audio_converter.py      #   Конвертация аудиоформатов
+│   ├── model_weights_service.py#   Управление весами модели
+│   ├── agent_runner.py         #   Запуск агентов
+│   ├── rpa_client.py           #   Клиент для RPA
+│   └── biometry_consent.py     #   Согласие на биометрию
+│
+├── voice/                      # Голосовой пайплайн
+│   ├── pipeline.py             #   Основной цикл: ASR → LLM → TTS
+│   ├── livekit_client.py       #   Клиент LiveKit Server
+│   ├── asr.py                  #   Распознавание речи (Whisper)
+│   └── tts.py                  #   Синтез речи (Silero, заглушка)
+│
+├── telephony/                  # Телефония (FreeSWITCH)
+│   ├── esl_client.py           #   Низкоуровневый ESL-клиент
+│   └── freeswitch_client.py    #   Высокоуровневый клиент (make_call и др.)
+│
+├── llm/                        # LLM-клиенты
+│   └── vllm_client.py          #   Клиент для vLLM (inference)
+│
+├── pii/                        # Анонимизация ПДн
+│   ├── anonymizer.py           #   Обёртка Presidio (асинхронная)
+│   └── recognizers.py          #   Распознаватели РФ-документов
+│
+├── bot/                        # Telegram-бот
+│   └── telegram.py             #   Логика бота
+│
+├── tasks/                      # Celery-задачи
+│   ├── campaign_tasks.py       #   Запуск кампаний
+│   └── import_tasks.py         #   Импорт данных
+│
+├── integrations/               # Внешние интеграции
+│   └── job_boards.py           #   hh.ru, Avito (REST API)
+│
+├── optimization/               # A/B-тестирование
+│   ├── bandit.py               #   Multi-armed bandit
+│   └── bandit_service.py       #   Сервис bandit
+│
+└── static/
+    └── index.html              #   Админ-панель (управление весами)
+```
+
+#### Инфраструктура — `infra/`
+
+```
+infra/
+├── helm/mass-recruit-hub/      # Helm-чарт для Kubernetes
+│   ├── Chart.yaml              #   Метаданные чарта
+│   ├── values.yaml             #   Значения (dev)
+│   ├── values-prod.yaml        #   Значения (prod)
+│   └── templates/              #   Шаблоны K8s
+│       ├── deployment.yaml     #     Deployment
+│       ├── service.yaml        #     Service
+│       ├── ingress.yaml        #     Ingress
+│       ├── configmap.yaml      #     ConfigMap
+│       ├── secret.yaml         #     Secret
+│       ├── externalsecret.yaml #     ExternalSecret (Vault / Lockbox)
+│       ├── hpa.yaml            #     HPA (автоскалинг)
+│       ├── serviceaccount.yaml #     ServiceAccount
+│       ├── servicemonitor.yaml #     ServiceMonitor (Prometheus Operator)
+│       └── grafana-dashboard-configmap.yaml
+│
+├── terraform/
+│   └── main.tf                 # Terraform для Yandex Cloud
+│
+├── docker/                     # Docker-образы
+│   ├── init-pgvector.sql       #   Инициализация pgvector
+│   └── freeswitch/             #   FreeSWITCH
+│       └── conf/autoload_configs/
+│           └── event_socket.conf.xml
+│
+├── livekit/
+│   └── livekit.yaml            # Конфиг LiveKit Server
+│
+├── prometheus/
+│   ├── prometheus.yml          # Конфиг Prometheus
+│   └── alerts.yaml             # Правила алертов
+│
+├── grafana/
+│   ├── datasource.yaml         # Datasource (Prometheus)
+│   └── dashboard-mass-recruit-hub.json  # Дашборд
+│
+├── elk/
+│   └── logstash.conf           # Logstash pipeline
+│
+├── filebeat/
+│   └── filebeat.yml            # Filebeat (сбор логов)
+│
+└── db/
+    └── migrations/
+        └── 001_create_fairness_reports.sql  # Миграции БД
+```
+
+#### Тесты — `tests/`
+
+```
+tests/
+├── unit/
+│   └── test_semantic_cache.py      # Unit-тест кэша
+│
+├── integration/
+│   ├── test_screener_e2e.py        # E2E скринера
+│   ├── test_interviewer_e2e.py     # E2E интервьюера
+│   ├── test_coordinator_e2e.py     # E2E координатора
+│   ├── test_onboarding_e2e.py      # E2E онбординга
+│   └── test_analyst_e2e.py         # E2E аналитика
+│
+├── test_screener_graph.py          # Тест графа скринера
+├── test_interviewer_graph.py       # Тест графа интервьюера
+└── test_coordinator_graph.py       # Тест графа координатора
+```
+
+#### Документация — `docs/`
+
+```
+docs/                               # Спецификации и гайды (RU)
+├── SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md         # Бизнес-контекст, FR/NFR, продукт
+├── ARCHITECTURE_AND_DATA_MODEL.md                     # Архитектура, C4, модель данных
+├── AI_AGENT_AND_ML_PIPELINE.md                        # AI-агенты, ML, fairness
+├── API_AND_USER_INTERFACE_SPECIFICATION.md            # REST API, WebSocket, UI
+├── VOICE_AND_TELEPHONY_PIPELINE.md                    # Голосовой пайплайн, телефония
+├── DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md        # Развёртывание, CI/CD, мониторинг
+├── SECURITY_COMPLIANCE_AND_PRIVACY_GUIDE.md           # Безопасность, PII, 152-ФЗ, ФСТЭК
+├── QUALITY_ASSURANCE_AND_TESTING_STRATEGY.md          # Тестирование, нагрузка
+└── DEVELOPER_ONBOARDING_AND_CODE_REFERENCE.md         # Онбординг, структура, стиль кода
+```
+
+#### Вспомогательное
+
+```
+migrations/versions/             # Миграции БД (Alembic)
+├── 001_initial_schema.py        #   Начальная схема
+├── 002_add_model_weights.py     #   Таблица model_weights
+├── 003_add_users.py             #   Таблица users
+└── 004_add_biometry_consent_log.py  # Логи согласия на биометрию
+
+evals/                           # LLM-оценки
+├── evaluation-strategy.md       #   Стратегия оценки
+├── test_hallucination.py        #   Тест галлюцинаций
+└── __init__.py
+
+scripts/                         # Скрипты
+├── deploy-prod.sh               #   Деплой (bash)
+├── run_vllm_server.py           #   Запуск vLLM
+├── download_whisper_model.py    #   Загрузка модели Whisper
+└── test_tts.py                  #   Тест TTS
+
+audio/                           # Тестовые аудиофайлы
+└── cand_intv_001.wav
 ```
 
 ### 3.2. Описание ключевых директорий

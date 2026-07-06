@@ -28,13 +28,13 @@ Production-окружение Multi-Agent Mass Recruitment Hub развёрну�
 
 ```mermaid
 flowchart TB
-    subgraph Cloud["☁️ Yandex Cloud"]
-        subgraph VPC["🌐 VPC"]
-            subgraph K8s["🚀 Managed K8s Cluster"]
-                subgraph Ingress["🔀 Ingress"]
+    subgraph Cloud["Yandex Cloud"]
+        subgraph VPC["VPC"]
+            subgraph K8s["Managed K8s Cluster"]
+                subgraph Ingress["Ingress"]
                     NGINX["NGINX Ingress Controller"]
                 end
-                subgraph Apps["⚙️ Applications"]
+                subgraph Apps["Applications"]
                     API["API Gateway (FastAPI) - 3 реплики"]
                     WORKER["Celery Workers - HPA"]
                     BEAT["Celery Beat"]
@@ -43,7 +43,7 @@ flowchart TB
                     FS["FreeSWITCH - 3 реплики (StatefulSet)"]
                     QDRANT["Qdrant - 4 шарда × 2 реплики"]
                 end
-                subgraph Observability["📊 Monitoring & Logging"]
+                subgraph Observability["Monitoring & Logging"]
                     PROM["Prometheus"]
                     GRAF["Grafana"]
                     ALERT["Alertmanager"]
@@ -52,13 +52,13 @@ flowchart TB
                     KIBANA["Kibana"]
                 end
             end
-            subgraph Managed["🗄️ Managed Services"]
+            subgraph Managed["Managed Services"]
                 PG[("PostgreSQL Cluster")]
                 REDIS[("Redis Cluster")]
                 S3[("Object Storage")]
             end
         end
-        ALB["🌍 Yandex ALB"]
+        ALB["Yandex ALB"]
     end
 
     ALB --> NGINX
@@ -85,33 +85,33 @@ flowchart TB
     LOGSTASH --> ELASTIC
     ELASTIC --> KIBANA
 
-    %% 🌈 Цветовая схема
-    style Cloud fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#1a237e
-    style VPC fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    style K8s fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    style Ingress fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
-    style Apps fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    style Observability fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
-    style Managed fill:#fce4ec,stroke:#c62828,stroke-width:2px,color:#b71c1c
+    %% Сдержанная цветовая схема
+    style Cloud fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#424242
+    style VPC fill:#fafafa,stroke:#bdbdbd,stroke-width:1px,color:#424242
+    style K8s fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#424242
+    style Ingress fill:#e8f5e9,stroke:#81c784,stroke-width:1px,color:#2e7d32
+    style Apps fill:#e3f2fd,stroke:#90caf9,stroke-width:1px,color:#1565c0
+    style Observability fill:#fff3e0,stroke:#ffcc80,stroke-width:1px,color:#e65100
+    style Managed fill:#fce4ec,stroke:#ef9a9a,stroke-width:1px,color:#c62828
 
-    style NGINX fill:#a5d6a7,stroke:#2e7d32,color:#1b5e20
-    style API fill:#64b5f6,stroke:#1565c0,color:#0d47a1
-    style WORKER fill:#64b5f6,stroke:#1565c0,color:#0d47a1
-    style BEAT fill:#64b5f6,stroke:#1565c0,color:#0d47a1
-    style FLOWER fill:#64b5f6,stroke:#1565c0,color:#0d47a1
-    style LK fill:#4dd0e1,stroke:#00838f,color:#004d40
-    style FS fill:#4dd0e1,stroke:#00838f,color:#004d40
-    style QDRANT fill:#ffb74d,stroke:#e65100,color:#bf360c
-    style PROM fill:#ef9a9a,stroke:#c62828,color:#b71c1c
-    style GRAF fill:#ef9a9a,stroke:#c62828,color:#b71c1c
-    style ALERT fill:#ef9a9a,stroke:#c62828,color:#b71c1c
-    style ELASTIC fill:#ce93d8,stroke:#6a1b9a,color:#4a148c
-    style LOGSTASH fill:#ce93d8,stroke:#6a1b9a,color:#4a148c
-    style KIBANA fill:#ce93d8,stroke:#6a1b9a,color:#4a148c
-    style PG fill:#e57373,stroke:#c62828,color:#b71c1c
-    style REDIS fill:#e57373,stroke:#c62828,color:#b71c1c
-    style S3 fill:#e57373,stroke:#c62828,color:#b71c1c
-    style ALB fill:#90caf9,stroke:#1565c0,color:#0d47a1
+    style NGINX fill:#a5d6a7,stroke:#66bb6a,color:#1b5e20
+    style API fill:#90caf9,stroke:#42a5f5,color:#0d47a1
+    style WORKER fill:#90caf9,stroke:#42a5f5,color:#0d47a1
+    style BEAT fill:#90caf9,stroke:#42a5f5,color:#0d47a1
+    style FLOWER fill:#90caf9,stroke:#42a5f5,color:#0d47a1
+    style LK fill:#80cbc4,stroke:#4db6ac,color:#004d40
+    style FS fill:#80cbc4,stroke:#4db6ac,color:#004d40
+    style QDRANT fill:#ffb74d,stroke:#ffa726,color:#bf360c
+    style PROM fill:#ef9a9a,stroke:#ef5350,color:#b71c1c
+    style GRAF fill:#ef9a9a,stroke:#ef5350,color:#b71c1c
+    style ALERT fill:#ef9a9a,stroke:#ef5350,color:#b71c1c
+    style ELASTIC fill:#b39ddb,stroke:#9575cd,color:#4a148c
+    style LOGSTASH fill:#b39ddb,stroke:#9575cd,color:#4a148c
+    style KIBANA fill:#b39ddb,stroke:#9575cd,color:#4a148c
+    style PG fill:#ef9a9a,stroke:#ef5350,color:#b71c1c
+    style REDIS fill:#ef9a9a,stroke:#ef5350,color:#b71c1c
+    style S3 fill:#ef9a9a,stroke:#ef5350,color:#b71c1c
+    style ALB fill:#90caf9,stroke:#42a5f5,color:#0d47a1
 ```
 
 **Взаимодействие компонентов:**
