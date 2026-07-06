@@ -1,4 +1,4 @@
-# Архитектура и модель данных Multi-Agent Mass Recruitment Hub
+## Архитектура и модель данных Multi-Agent Mass Recruitment Hub
 
 ---
 
@@ -36,58 +36,77 @@
 
 ```mermaid
 flowchart TB
-    subgraph "API & Orchestration"
-        API[API Gateway<br/>FastAPI]
-        ORC[Agent Coordinator<br/>LangGraph]
-        SCR[Agent-Screener]
-        INT[Agent-Interviewer]
-        COORD[Agent-Coordinator]
-        ONB[Agent-Onboarding]
-        ANL[Agent-Analyst]
+    subgraph Frontend["🎨 Frontend"]
+        UI["Веб-интерфейс<br/>React + TypeScript"]
     end
 
-    subgraph "Voice & Media"
-        FS[FreeSWITCH<br/>SIP Server]
-        LK[LiveKit<br/>WebRTC]
+    subgraph Backend["⚙️ Backend"]
+        API["API Gateway<br/>FastAPI"]
+        ORC["Оркестратор агентов<br/>LangGraph"]
+        SCR["Agent-Screener"]
+        INT["Agent-Interviewer"]
+        ONB["Agent-Onboarding"]
+        ANL["Agent-Analyst"]
     end
 
-    subgraph "Background Processing"
-        CEL[Celery Workers<br/>Transcription, Agent, CRM]
+    subgraph Voice["🎤 Voice Pipeline"]
+        FS["FreeSWITCH<br/>SIP Server"]
+        LK["LiveKit<br/>WebRTC"]
     end
 
-    subgraph "Storage"
-        PG[(PostgreSQL)]
-        QD[(Qdrant)]
-        RD[(Redis)]
-        S3[(MinIO/S3)]
+    subgraph Storage["💾 Storage"]
+        PG[("PostgreSQL")]
+        QD[("Qdrant")]
+        RD[("Redis")]
+        S3[("MinIO/S3")]
     end
 
-    subgraph "Observability"
-        PRO[Prometheus]
-        GRA[Grafana]
-        ELK[ELK Stack]
+    subgraph Observability["📊 Observability"]
+        PRO["Prometheus"]
+        GRA["Grafana"]
+        ELK["ELK Stack"]
     end
 
+    UI --> API
     API --> ORC
-    ORC --> SCR
-    ORC --> INT
-    ORC --> COORD
+    ORC --> SCR --> LK --> FS
+    ORC --> INT --> LK
     ORC --> ONB
     ORC --> ANL
-    SCR --> LK
-    INT --> LK
-    LK --> FS
-    SCR --> CEL
-    INT --> CEL
-    CEL --> PG
-    CEL --> QD
-    CEL --> RD
-    CEL --> S3
-    API --> PG
-    API --> RD
-    API --> PRO
-    API --> ELK
-    PRO --> GRA
+
+    SCR --> Storage
+    INT --> Storage
+    ONB --> Storage
+    ANL --> Storage
+    API --> Storage
+
+    API --> Observability
+    SCR --> Observability
+    INT --> Observability
+
+    %% Пастельная цветовая схема
+    style Frontend fill:#f0f8f0,stroke:#a5d6a7,stroke-width:1.5px
+    style Backend fill:#f0f4ff,stroke:#90caf9,stroke-width:1.5px
+    style Voice fill:#f5f0ff,stroke:#ce93d8,stroke-width:1.5px
+    style Storage fill:#fff5f0,stroke:#ffcc80,stroke-width:1.5px
+    style Observability fill:#fff0f0,stroke:#ef9a9a,stroke-width:1.5px
+
+    style UI fill:#c8e6c9,stroke:#81c784,color:#2e7d32
+    style API fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style ORC fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style SCR fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style INT fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style ONB fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style ANL fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style FS fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style LK fill:#e1bee7,stroke:#ce93d8,color:#4a148c
+    style PG fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style QD fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style RD fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style S3 fill:#ffe0b2,stroke:#ffb74d,color:#bf360c
+    style PRO fill:#ffcdd2,stroke:#ef9a9a,color:#b71c1c
+    style GRA fill:#ffcdd2,stroke:#ef9a9a,color:#b71c1c
+    style ELK fill:#ffcdd2,stroke:#ef9a9a,color:#b71c1c
 ```
 
 **Взаимодействие контейнеров:**
@@ -614,35 +633,38 @@ Multi-Agent Mass Recruitment Hub взаимодействует с широки�
 
 ```mermaid
 flowchart LR
-    subgraph External[Внешние системы]
-        HH[hh.ru]
-        AV[Avito]
-        MAX[MAX]
-        TG[Telegram]
-        VK[VK]
-        ONES[1С:ЗУП]
-        GCAL[Google Calendar]
-        YCAL[Yandex Calendar]
-        SIP[SIP-оператор]
+    subgraph External["🌐 Внешние системы"]
+        direction TB
+        subgraph HR["HR-платформы"]
+            HH["hh.ru"]
+            AV["Avito"]
+            ONES["1С:ЗУП"]
+        end
+        subgraph Messengers["💬 Мессенджеры"]
+            MAX["MAX"]
+            TG["Telegram"]
+            VK["VK"]
+        end
+        subgraph Calendars["📅 Календари"]
+            GCAL["Google Calendar"]
+            YCAL["Yandex Calendar"]
+        end
+        SIP["📞 SIP-оператор"]
     end
 
-    subgraph Multi-Agent Mass Recruitment Hub
-        API[API Gateway]
-        INT[Integration Layer]
-        AGENTS[AI Agents]
-        CAL[Calendar Service]
-        TEL[Telephony]
+    subgraph Hub["🎯 MassRecruitHub"]
+        direction TB
+        API["API Gateway"]
+        INT["Integration Layer"]
+        AGENTS["AI Agents"]
+        CAL["Calendar Service"]
+        TEL["Telephony"]
     end
 
-    HH -->|REST / OAuth| INT
-    AV -->|REST / API Key| INT
-    MAX -->|REST / JWT| INT
-    TG -->|Bot API / Webhook| INT
-    VK -->|VK API / Service Token| INT
-    ONES -->|REST / RPA| INT
-    GCAL -->|REST / OAuth| CAL
-    YCAL -->|REST / OAuth| CAL
-    SIP -->|SIP / WebRTC| TEL
+    HR -->|"REST / OAuth"| INT
+    Messengers -->|"REST / Bot API"| INT
+    Calendars -->|"REST / OAuth"| CAL
+    SIP -->|"SIP / WebRTC"| TEL
 
     INT --> AGENTS
     CAL --> AGENTS
@@ -650,6 +672,29 @@ flowchart LR
     API --> INT
     API --> CAL
     API --> TEL
+
+    %% Пастельная цветовая схема
+    style External fill:#f5f5f5,stroke:#bdbdbd,stroke-width:1px
+    style HR fill:#e8f5e9,stroke:#a5d6a7,stroke-width:1px
+    style Messengers fill:#e3f2fd,stroke:#90caf9,stroke-width:1px
+    style Calendars fill:#fff3e0,stroke:#ffcc80,stroke-width:1px
+    style Hub fill:#f3e5f5,stroke:#ce93d8,stroke-width:1px
+
+    style HH fill:#c8e6c9,stroke:#66bb6a,color:#2e7d32
+    style AV fill:#c8e6c9,stroke:#66bb6a,color:#2e7d32
+    style ONES fill:#c8e6c9,stroke:#66bb6a,color:#2e7d32
+    style MAX fill:#bbdefb,stroke:#42a5f5,color:#0d47a1
+    style TG fill:#bbdefb,stroke:#42a5f5,color:#0d47a1
+    style VK fill:#bbdefb,stroke:#42a5f5,color:#0d47a1
+    style GCAL fill:#ffe0b2,stroke:#ffa726,color:#bf360c
+    style YCAL fill:#ffe0b2,stroke:#ffa726,color:#bf360c
+    style SIP fill:#ce93d8,stroke:#ab47bc,color:#4a148c
+
+    style API fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style INT fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style AGENTS fill:#bbdefb,stroke:#64b5f6,color:#0d47a1
+    style CAL fill:#ffe0b2,stroke:#ffa726,color:#bf360c
+    style TEL fill:#ce93d8,stroke:#ab47bc,color:#4a148c
 ```
 
 ## 5.2. Детальное описание каждой интеграции
