@@ -355,45 +355,45 @@ flowchart LR
 
 | Документ | Описание |
 | :--- | :--- |
-| 📄 **[SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md](./docs/SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md)** | Полная спецификация системы: бизнес-контекст, функциональные и нефункциональные требования, продуктовое видение, конкурентный анализ, дорожная карта и модель монетизации. |
-| 🏗️ **[ARCHITECTURE_AND_DATA_MODEL.md](./docs/ARCHITECTURE_AND_DATA_MODEL.md)** | Архитектурный фундамент: C4-диаграммы (уровни 2 и 3), реестр архитектурных решений (ADR), модель данных PostgreSQL, схема интеграций с внешними системами. |
+| 📄 [SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md](./docs/SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md) | Полная спецификация системы: бизнес-контекст, функциональные и нефункциональные требования, продуктовое видение, конкурентный анализ, дорожная карта и модель монетизации. |
+| 🏗️ [ARCHITECTURE_AND_DATA_MODEL.md](./docs/ARCHITECTURE_AND_DATA_MODEL.md) | Архитектурный фундамент: C4-диаграммы (уровни 2 и 3), реестр архитектурных решений (ADR), модель данных PostgreSQL, схема интеграций с внешними системами. |
 
 ### 🤖 AI-агенты и ML
 
 | Документ | Описание |
 | :--- | :--- |
-| 🤖 **[AI_AGENT_AND_ML_PIPELINE.md](./docs/AI_AGENT_AND_ML_PIPELINE.md)** | Детальное описание пяти AI-агентов (Screener, Interviewer, Coordinator, Onboarding, Analyst), ML-пайплайна (пропенсити-дайлер, Whisper, эмбеддинги), fairness-аудита и LLM-оптимизации (vLLM, MVR-cache). |
-| 🎤 **[VOICE_AND_TELEPHONY_PIPELINE.md](./docs/VOICE_AND_TELEPHONY_PIPELINE.md)** | Голосовой пайплайн: FreeSWITCH, LiveKit, Whisper ASR, Silero TTS, просодический анализ, мониторинг качества, масштабирование. |
+| 🤖 [AI_AGENT_AND_ML_PIPELINE.md](./docs/AI_AGENT_AND_ML_PIPELINE.md) | Детальное описание пяти AI-агентов (Screener, Interviewer, Coordinator, Onboarding, Analyst), ML-пайплайна (пропенсити-дайлер, Whisper, эмбеддинги), fairness-аудита и LLM-оптимизации (vLLM, MVR-cache). |
+| 🎤 [VOICE_AND_TELEPHONY_PIPELINE.md](./docs/VOICE_AND_TELEPHONY_PIPELINE.md) | Голосовой пайплайн: FreeSWITCH, LiveKit, Whisper ASR, Silero TTS, просодический анализ, мониторинг качества, масштабирование. |
 
 ### 🌐 API и интерфейсы
 
 | Документ | Описание |
 | :--- | :--- |
-| 🌐 **[API_AND_USER_INTERFACE_SPECIFICATION.md](./docs/API_AND_USER_INTERFACE_SPECIFICATION.md)** | REST API, WebSocket (голосовой пайплайн), пользовательский интерфейс (экраны, компоненты, user flows), сквозные сценарии использования (use cases). |
+| 🌐 [API_AND_USER_INTERFACE_SPECIFICATION.md](./docs/API_AND_USER_INTERFACE_SPECIFICATION.md) | REST API, WebSocket (голосовой пайплайн), пользовательский интерфейс (экраны, компоненты, user flows), сквозные сценарии использования (use cases). |
 
 ### 🚀 Развёртывание и эксплуатация
 
 | Документ | Описание |
 | :--- | :--- |
-| 🚀 **[DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md](./docs/DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md)** | Развёртывание в Yandex Cloud (Terraform, Helm), CI/CD (GitHub Actions), наблюдаемость (Prometheus, Grafana, ELK), администрирование (бэкапы, масштабирование, troubleshooting). |
+| 🚀 [DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md](./docs/DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md) | Развёртывание в Yandex Cloud (Terraform, Helm), CI/CD (GitHub Actions), наблюдаемость (Prometheus, Grafana, ELK), администрирование (бэкапы, масштабирование, troubleshooting). |
 
 ### 🧪 Качество и тестирование
 
 | Документ | Описание |
 | :--- | :--- |
-| 🧪 **[QUALITY_ASSURANCE_AND_TESTING_STRATEGY.md](./docs/QUALITY_ASSURANCE_AND_TESTING_STRATEGY.md)** | Стратегия тестирования: пирамида тестов (unit 150+, integration 40+, E2E 15+), нагрузочные тесты (1000 сессий), fairness-тесты, интеграция с CI/CD. |
+| 🧪 [QUALITY_ASSURANCE_AND_TESTING_STRATEGY.md](./docs/QUALITY_ASSURANCE_AND_TESTING_STRATEGY.md) | Стратегия тестирования: пирамида тестов (unit 150+, integration 40+, E2E 15+), нагрузочные тесты (1000 сессий), fairness-тесты, интеграция с CI/CD. |
 
 ### 🔒 Безопасность и комплаенс
 
 | Документ | Описание |
 | :--- | :--- |
-| 🔒 **[SECURITY_COMPLIANCE_AND_PRIVACY_GUIDE.md](./docs/SECURITY_COMPLIANCE_AND_PRIVACY_GUIDE.md)** | Безопасность и комплаенс: PII-архитектура (Presidio, кастомные recognizer'ы), соответствие 152-ФЗ, 187-ФЗ, ФСТЭК, EU AI Act, политика безопасности, реагирование на инциденты. |
+| 🔒 [SECURITY_COMPLIANCE_AND_PRIVACY_GUIDE.md](./docs/SECURITY_COMPLIANCE_AND_PRIVACY_GUIDE.md) | Безопасность и комплаенс: PII-архитектура (Presidio, кастомные recognizer'ы), соответствие 152-ФЗ, 187-ФЗ, ФСТЭК, EU AI Act, политика безопасности, реагирование на инциденты. |
 
 ### 👨‍💻 Для разработчиков
 
 | Документ | Описание |
 | :--- | :--- |
-| 👨‍💻 **[DEVELOPER_ONBOARDING_AND_CODE_REFERENCE.md](./docs/DEVELOPER_ONBOARDING_AND_CODE_REFERENCE.md)** | Онбординг разработчиков: быстрый старт (1 час), структура проекта, справочник по ключевым файлам, code style, git flow, contribution guide, архитектурное ревью и технический долг. |
+| 👨‍💻 [DEVELOPER_ONBOARDING_AND_CODE_REFERENCE.md](./docs/DEVELOPER_ONBOARDING_AND_CODE_REFERENCE.md) | Онбординг разработчиков: быстрый старт (1 час), структура проекта, справочник по ключевым файлам, code style, git flow, contribution guide, архитектурное ревью и технический долг. |
 
 ---
 

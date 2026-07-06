@@ -108,3 +108,14 @@ changelog_auto.md
 scripts/replace_code_refs.py
 scripts/fix_nested_links.py
 scripts/audit_links.py
+scripts/audit_issues.py
+scripts/fix_all_links.py
+scripts/fix_type1.py
+scripts/audit_remaining.py
+scripts/audit_doclinks.py
+scripts/fix_bold_links.py
+scripts/verify_bold_fix.py
+scripts/find_backtick_paths.py
+scripts/find_all_backtick_paths.py
+scripts/find_issues.py
+scripts/fix_backtick_paths.py

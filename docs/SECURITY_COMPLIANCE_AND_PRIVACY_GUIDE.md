@@ -47,11 +47,11 @@ flowchart LR
 4. Анонимайзер заменяет найденные сущности на плейсхолдеры (например, `<PERSON>` для имени, `<PHONE>` для номера телефона).
 5. Замаскированный текст используется в LLM, RAG-поиске и для хранения в логах.
 
-**Реализация в коде:** `[src/pii/anonymizer.py](../src/pii/anonymizer.py)` предоставляет асинхронную функцию `anonymize_pii`, которая вызывает анализатор и анонимайзер в отдельном потоке (для неблокирующей работы).
+**Реализация в коде:** [src/pii/anonymizer.py](../src/pii/anonymizer.py) предоставляет асинхронную функцию `anonymize_pii`, которая вызывает анализатор и анонимайзер в отдельном потоке (для неблокирующей работы).
 
 ### 2.3. Кастомные recognizer'ы для РФ
 
-В `[src/pii/recognizers.py](../src/pii/recognizers.py)` определены четыре кастомных распознавателя для специфических российских форматов данных:
+В [src/pii/recognizers.py](../src/pii/recognizers.py) определены четыре кастомных распознавателя для специфических российских форматов данных:
 
 | Recognizer | Сущность | Паттерн (регулярное выражение) | Confidence | Пример |
 |------------|----------|--------------------------------|------------|--------|
@@ -60,7 +60,7 @@ flowchart LR
 | `RussianPhoneRecognizer` | `PHONE` | `\+7[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}` | 0.85 | «+7 999 123-45-67» → `<PHONE>` |
 | `RussianAddressRecognizer` | `ADDRESS` | `(?:ул\.\|улица\|просп.\|пр\-т\|...)\s+[А-Яа-я0-9\-\s\.]+` | 0.6 | «ул. Ленина, д. 10» → `<ADDRESS>` |
 
-Эти recognizer'ы регистрируются в анализаторе при инициализации (функция `_get_engines` в `[anonymizer.py](../src/pii/anonymizer.py)`). При отсутствии библиотеки с recognizer'ами система выводит предупреждение, но продолжает работу со стандартными анализаторами.
+Эти recognizer'ы регистрируются в анализаторе при инициализации (функция `_get_engines` в [anonymizer.py](../src/pii/anonymizer.py)). При отсутствии библиотеки с recognizer'ами система выводит предупреждение, но продолжает работу со стандартными анализаторами.
 
 ### 2.4. Сбор согласий
 
@@ -72,11 +72,11 @@ flowchart LR
 - **Голосовое информирование:** в начале каждого звонка кандидату сообщается, что разговор записывается, и предлагается подтвердить согласие нажатием кнопки (например, «Нажмите 1, если вы согласны на обработку данных и запись разговора»).
 - **Текстовое информирование:** в мессенджерах (Telegram, MAX, VK) кандидату отправляется полный текст согласия со ссылкой на политику обработки ПДн, и требуется явное подтверждение (например, нажатие кнопки «Согласен»).
 
-Факт согласия фиксируется в БД (поля `consent_152fz`, `consent_biometry` в таблице `candidates`) и в аудит-логе с указанием действия `consent_given` и, для биометрии, хеша фрагмента аудио (в поле `metadata`). Валидация согласия выполняется в методе `validate_consent` модели `Candidate` (`[src/core/models.py](../src/core/models.py)`) — при отсутствии согласия скрининг блокируется.
+Факт согласия фиксируется в БД (поля `consent_152fz`, `consent_biometry` в таблице `candidates`) и в аудит-логе с указанием действия `consent_given` и, для биометрии, хеша фрагмента аудио (в поле `metadata`). Валидация согласия выполняется в методе `validate_consent` модели `Candidate` ([src/core/models.py](../src/core/models.py)) — при отсутствии согласия скрининг блокируется.
 
 ### 2.5. Маскирование PII (Candidate.mask_pii)
 
-Метод `mask_pii` модели `Candidate` (`[src/core/models.py](../src/core/models.py)`) обеспечивает анонимизацию полей `name`, `phone` и `resume_text` перед передачей в LLM, RAG или логи. Это асинхронная обёртка над `anonymize_pii`, которая вызывает Presidio в отдельном потоке.
+Метод `mask_pii` модели `Candidate` ([src/core/models.py](../src/core/models.py)) обеспечивает анонимизацию полей `name`, `phone` и `resume_text` перед передачей в LLM, RAG или логи. Это асинхронная обёртка над `anonymize_pii`, которая вызывает Presidio в отдельном потоке.
 
 **Порядок маскирования:**
 1. Создаётся копия объекта `Candidate`.
@@ -99,11 +99,11 @@ flowchart LR
 - **Внешние каналы (REST API, WebSocket, WebRTC):** TLS 1.3 с сертификатами, выпущенными Let's Encrypt или корпоративным CA.
 - **Внутренние каналы (между микросервисами в Kubernetes):** mTLS с автоматической ротацией сертификатов (например, через Istio или cert-manager).
 
-**Управление секретами:** все чувствительные данные (пароли, ключи API, токены) хранятся в HashiCorp Vault. В K8s используется External Secrets Operator (`[infra/helm/mass-recruit-hub/templates/externalsecret.yaml](../infra/helm/mass-recruit-hub/templates/externalsecret.yaml)`), который синхронизирует секреты из Vault в Kubernetes Secrets.
+**Управление секретами:** все чувствительные данные (пароли, ключи API, токены) хранятся в HashiCorp Vault. В K8s используется External Secrets Operator ([infra/helm/mass-recruit-hub/templates/externalsecret.yaml](../infra/helm/mass-recruit-hub/templates/externalsecret.yaml)), который синхронизирует секреты из Vault в Kubernetes Secrets.
 
 ### 2.7. Право на забвение (ст. 15 152-ФЗ)
 
-По требованию кандидата или по истечении срока хранения система обязана удалить все его данные. Для этого реализован эндпоинт `POST /api/v1/candidates/{candidate_id}/delete` (`[src/api/deletion.py](../src/api/deletion.py)`), который запускает каскадное удаление через `[src/services/deletion_service.py](../src/services/deletion_service.py)`.
+По требованию кандидата или по истечении срока хранения система обязана удалить все его данные. Для этого реализован эндпоинт `POST /api/v1/candidates/{candidate_id}/delete` ([src/api/deletion.py](../src/api/deletion.py)), который запускает каскадное удаление через [src/services/deletion_service.py](../src/services/deletion_service.py).
 
 **Процесс cascade deletion (шаг за шагом):**
 
@@ -120,7 +120,7 @@ flowchart LR
 
 ### 2.8. Аудит-логирование (structlog)
 
-Для выполнения требований ст. 18.1 и 22 152-ФЗ (фиксация всех действий с ПДн) используется структурированное логирование через `structlog`. Настройка находится в `[src/core/logging_config.py](../src/core/logging_config.py)`, а фасад для аудита — в `[src/core/audit_logger.py](../src/core/audit_logger.py)`.
+Для выполнения требований ст. 18.1 и 22 152-ФЗ (фиксация всех действий с ПДн) используется структурированное логирование через `structlog`. Настройка находится в [src/core/logging_config.py](../src/core/logging_config.py), а фасад для аудита — в [src/core/audit_logger.py](../src/core/audit_logger.py).
 
 **Обязательные поля** (должны присутствовать в каждом аудит-событии):
 - `candidate_id` — идентификатор кандидата.
@@ -132,7 +132,7 @@ flowchart LR
 **Дополнительные поля** (для детализации):
 - `session_id`, `campaign_id`, `agent_id`, `duration_ms`, `error` (текст ошибки).
 
-**Формат и хранение:** логи пишутся в JSON-файл (`logs/app.json.log`), откуда Filebeat (`[infra/filebeat/filebeat.yml](../infra/filebeat/filebeat.yml)`) передаёт их в Logstash (`[infra/elk/logstash.conf](../infra/elk/logstash.conf)`), который парсит JSON, маскирует PII (при необходимости) и отправляет в Elasticsearch (индекс `mrh-audit-{YYYY-MM-DD}`).
+**Формат и хранение:** логи пишутся в JSON-файл (`logs/app.json.log`), откуда Filebeat ([infra/filebeat/filebeat.yml](../infra/filebeat/filebeat.yml)) передаёт их в Logstash ([infra/elk/logstash.conf](../infra/elk/logstash.conf)), который парсит JSON, маскирует PII (при необходимости) и отправляет в Elasticsearch (индекс `mrh-audit-{YYYY-MM-DD}`).
 
 **Неизменяемость (append-only):** записи аудита никогда не удаляются и не изменяются. При удалении кандидата в поле `deleted_at` проставляется метка времени, но исходная запись сохраняется для целей расследования.
 
@@ -146,12 +146,12 @@ flowchart LR
 
 | Статья | Требование | Статус | Реализация в коде | Ответственный |
 |--------|------------|--------|-------------------|---------------|
-| **Ст. 6** | Согласие субъекта на обработку ПДн | ✅ Выполнено | Поля `consent_152fz`, `consent_biometry` в `[src/core/models.py](../src/core/models.py)`; валидация в `validate_consent` | CTO, DPO |
+| **Ст. 6** | Согласие субъекта на обработку ПДн | ✅ Выполнено | Поля `consent_152fz`, `consent_biometry` в [src/core/models.py](../src/core/models.py); валидация в `validate_consent` | CTO, DPO |
 | **Ст. 9** | Письменное согласие для спец. категорий | ✅ Выполнено | `consent_biometry` (отдельный чек-бокс); аудиозапись момента согласия | CTO, DPO |
-| **Ст. 10** | Обработка специальных категорий ПДн | ✅ Выполнено | Биометрические данные обрабатываются только при `consent_biometry=true`; маскируются перед LLM через Presidio (`[src/pii/anonymizer.py](../src/pii/anonymizer.py)`) | DPO, Security |
+| **Ст. 10** | Обработка специальных категорий ПДн | ✅ Выполнено | Биометрические данные обрабатываются только при `consent_biometry=true`; маскируются перед LLM через Presidio ([src/pii/anonymizer.py](../src/pii/anonymizer.py)) | DPO, Security |
 | **Ст. 11** | Биометрические данные | ✅ Выполнено | Голосовая биометрия хранится в зашифрованном виде (S3) и в виде эмбеддингов в Qdrant с шифрованием payload | DevOps, Security |
-| **Ст. 12** | Трансграничная передача | ✅ Выполнено | Все данные хранятся в Yandex Cloud (РФ); LLM — только YandexGPT/GigaChat (`[src/core/config.py](../src/core/config.py)`) | CTO, DevOps |
-| **Ст. 15** | Право на забвение | ✅ Выполнено | Cascade deletion: PostgreSQL, Qdrant, S3, Redis, Mem0; soft-delete в audit-логах (`[src/services/deletion_service.py](../src/services/deletion_service.py)`) | Backend, Security |
+| **Ст. 12** | Трансграничная передача | ✅ Выполнено | Все данные хранятся в Yandex Cloud (РФ); LLM — только YandexGPT/GigaChat ([src/core/config.py](../src/core/config.py)) | CTO, DevOps |
+| **Ст. 15** | Право на забвение | ✅ Выполнено | Cascade deletion: PostgreSQL, Qdrant, S3, Redis, Mem0; soft-delete в audit-логах ([src/services/deletion_service.py](../src/services/deletion_service.py)) | Backend, Security |
 | **Ст. 18.1** | Информирование субъекта | ✅ Выполнено | Двойное информирование: голосовое (в начале звонка) + текстовое (в мессенджере) | Frontend, Voice |
 | **Ст. 22** | Уведомление Роскомнадзора | ✅ Выполнено | Уведомление подано, получен регистрационный номер (отдельный документ) | DPO, Legal |
 | **Ст. 22.1** | Оценка соответствия (биометрия) | ⚠️ Планируется | Будет проведена после аттестации УЗ-1 (Q3 2026) | DPO, Security |
@@ -159,7 +159,7 @@ flowchart LR
 
 ### 3.2. Трансграничная передача (ст. 12)
 
-Система строго соблюдает запрет на передачу ПДн за пределы Российской Федерации. Все компоненты развёрнуты в Yandex Cloud (дата-центры во Владимирской и Московской областях) или в on-premise ЦОД заказчика. Для LLM-инференса используются только российские провайдеры: YandexGPT (эндпоинт `https://llm.api.yandex.cloud/v1`) и GigaChat (как fallback). Зарубежные сервисы (OpenAI, Anthropic, Google Cloud) не применяются для обработки ПДн, даже в тестовых сценариях. Настройки зафиксированы в `[src/core/config.py](../src/core/config.py)`, где `LLM_ENDPOINT` указывает только на российские API.
+Система строго соблюдает запрет на передачу ПДн за пределы Российской Федерации. Все компоненты развёрнуты в Yandex Cloud (дата-центры во Владимирской и Московской областях) или в on-premise ЦОД заказчика. Для LLM-инференса используются только российские провайдеры: YandexGPT (эндпоинт `https://llm.api.yandex.cloud/v1`) и GigaChat (как fallback). Зарубежные сервисы (OpenAI, Anthropic, Google Cloud) не применяются для обработки ПДн, даже в тестовых сценариях. Настройки зафиксированы в [src/core/config.py](../src/core/config.py), где `LLM_ENDPOINT` указывает только на российские API.
 
 ### 3.3. Биометрические данные (ст. 11 152-ФЗ + 482-ФЗ)
 
@@ -180,7 +180,7 @@ flowchart LR
 
 **Защита передачи:**
 - Канал связи защищён TLS 1.3.
-- Данные передаются через Enterprise Service Bus (ESB) или RPA-слой (например, n8n + UiPath) — реализация в `[src/services/hr_integrations.py](../src/services/hr_integrations.py)` (функция `send_to_1c` — заглушка, но в production используется защищённый коннектор).
+- Данные передаются через Enterprise Service Bus (ESB) или RPA-слой (например, n8n + UiPath) — реализация в [src/services/hr_integrations.py](../src/services/hr_integrations.py) (функция `send_to_1c` — заглушка, но в production используется защищённый коннектор).
 - В системе эти данные хранятся в зашифрованном виде и доступны только ограниченному кругу администраторов (роль `admin`) через отдельный интерфейс.
 
 ## 4. Политика безопасности (Security Policy)
@@ -193,14 +193,14 @@ flowchart LR
 
 ### 4.2. Идентификация и аутентификация
 
-- **JWT (JSON Web Token):** используется для аутентификации пользователей API. Access Token имеет время жизни 15 минут, Refresh Token — 7 дней. Генерация и валидация реализованы в `[src/api/auth.py](../src/api/auth.py)` с использованием библиотеки `python-jose`.
+- **JWT (JSON Web Token):** используется для аутентификации пользователей API. Access Token имеет время жизни 15 минут, Refresh Token — 7 дней. Генерация и валидация реализованы в [src/api/auth.py](../src/api/auth.py) с использованием библиотеки `python-jose`.
 - **MFA (Multi-Factor Authentication):** для ролей `admin` и `supervisor` планируется внедрение TOTP (в текущей версии не реализовано, но заложено в roadmap).
 - **OAuth 2.0:** используется для интеграций с внешними сервисами (hh.ru, Google Calendar, Яндекс.Календарь).
 - **Управление сессиями:** сессии хранятся в Redis с TTL, соответствующим времени жизни токена. При logout токен инвалидируется (добавляется в черный список).
 
 ### 4.3. Авторизация (RBAC)
 
-Система поддерживает три роли, определённые в `[src/api/deps.py](../src/api/deps.py)` (функции `get_current_user` и `get_current_admin`):
+Система поддерживает три роли, определённые в [src/api/deps.py](../src/api/deps.py) (функции `get_current_user` и `get_current_admin`):
 
 | Роль | Доступ к API | Управление кампаниями | Просмотр аналитики | Управление пользователями | Управление весами моделей |
 |------|--------------|------------------------|-------------------|--------------------------|---------------------------|
@@ -215,24 +215,24 @@ flowchart LR
 - **TLS 1.3:** все внешние каналы (REST API, WebSocket, WebRTC) защищены TLS 1.3 с сертификатами, управляемыми через cert-manager.
 - **mTLS:** внутренние сервисы в Kubernetes используют взаимную аутентификацию по сертификатам (например, через Istio или Linkerd).
 - **SIP-канал (FreeSWITCH):** используется SIP over TLS (SIPS) с ограничением доступа по ACL (только доверенные IP-адреса провайдера). Порт 5060 открыт только для SIP-трафика.
-- **Webhook-безопасность:** вебхуки от АТС и мессенджеров проверяются через HMAC-SHA256 (для АТС) или IP-белые списки + секретные токены (для Telegram). Реализация: `[src/api/messenger_webhook.py](../src/api/messenger_webhook.py)` и `[src/api/telegram_webhook.py](../src/api/telegram_webhook.py)`.
+- **Webhook-безопасность:** вебхуки от АТС и мессенджеров проверяются через HMAC-SHA256 (для АТС) или IP-белые списки + секретные токены (для Telegram). Реализация: [src/api/messenger_webhook.py](../src/api/messenger_webhook.py) и [src/api/telegram_webhook.py](../src/api/telegram_webhook.py).
 - **DDoS Protection:** на уровне Ingress контроллера настроен rate limiting (100 запросов/сек с одного IP). Дополнительно планируется использование облачного WAF (Web Application Firewall) Yandex Cloud.
 
 ### 4.5. Безопасность данных
 
 - **Шифрование at rest:** PostgreSQL (AES-256 через расширение `pgcrypto` или табличные пространства), S3 (SSE-S3), Qdrant (payload шифруется на уровне приложения).
 - **Шифрование in transit:** TLS 1.3 для всех внешних соединений и mTLS для внутренних.
-- **PII-маскирование:** Presidio с кастомными recognizer'ами (`[src/pii/recognizers.py](../src/pii/recognizers.py)`) применяется перед любым использованием данных в LLM, RAG или логировании.
-- **Secrets Management:** все секреты хранятся в HashiCorp Vault и синхронизируются с Kubernetes через External Secrets Operator (`[infra/helm/mass-recruit-hub/templates/externalsecret.yaml](../infra/helm/mass-recruit-hub/templates/externalsecret.yaml)`). Автоматическая ротация секретов настроена через политики Vault.
+- **PII-маскирование:** Presidio с кастомными recognizer'ами ([src/pii/recognizers.py](../src/pii/recognizers.py)) применяется перед любым использованием данных в LLM, RAG или логировании.
+- **Secrets Management:** все секреты хранятся в HashiCorp Vault и синхронизируются с Kubernetes через External Secrets Operator ([infra/helm/mass-recruit-hub/templates/externalsecret.yaml](../infra/helm/mass-recruit-hub/templates/externalsecret.yaml)). Автоматическая ротация секретов настроена через политики Vault.
 
 ### 4.6. Безопасность кода
 
-- **Валидация входных данных:** все модели API используют Pydantic (`[src/core/models.py](../src/core/models.py)`) с явными типами и валидаторами (например, `validate_consent`). SQL-запросы строятся через SQLAlchemy с параметризацией, исключающей SQL-инъекции.
+- **Валидация входных данных:** все модели API используют Pydantic ([src/core/models.py](../src/core/models.py)) с явными типами и валидаторами (например, `validate_consent`). SQL-запросы строятся через SQLAlchemy с параметризацией, исключающей SQL-инъекции.
 - **Запрещённые конструкции:** в коде запрещено использование `eval()`, `exec()`, `pickle` с недоверенными данными. Проверяется с помощью SAST-инструментов.
 - **SAST (Static Application Security Testing):** Semgrep запускается в CI на каждый PR. Критические и высокие уязвимости блокируют мерж.
 - **DAST (Dynamic Application Security Testing):** OWASP ZAP запускается еженедельно на staging-окружении для выявления уязвимостей в рантайме.
 - **Dependency Scanning:** `pip-audit` и `npm audit` проверяют зависимости на известные уязвимости (CVSS >7.0 блокируют CI).
-- **Безопасная сборка Docker:** используется multi-stage сборка (`[Dockerfile](../Dockerfile)`), контейнеры запускаются от non-root пользователя (`appuser`), файловая система монтируется как `readOnlyRootFilesystem` (параметр в `infra/helm/[values-prod.yaml](../infra/helm/mass-recruit-hub/values-prod.yaml)`).
+- **Безопасная сборка Docker:** используется multi-stage сборка ([Dockerfile](../Dockerfile)), контейнеры запускаются от non-root пользователя (`appuser`), файловая система монтируется как `readOnlyRootFilesystem` (параметр в [infra/helm/values-prod.yaml](../infra/helm/mass-recruit-hub/values-prod.yaml)).
 
 ### 4.7. Физическая безопасность (ЦОД)
 
@@ -252,10 +252,10 @@ Multi-Agent Mass Recruitment Hub обрабатывает биометричес
 | Мера | Реализация | Статус |
 |------|------------|--------|
 | **Идентификация и аутентификация** | JWT, MFA для admin (планируется), строгая политика паролей (длина, сложность) | ✅ |
-| **Управление доступом (RBAC)** | Роли admin, supervisor, hr с горизонтальным разграничением (`[src/api/deps.py](../src/api/deps.py)`) | ✅ |
+| **Управление доступом (RBAC)** | Роли admin, supervisor, hr с горизонтальным разграничением ([src/api/deps.py](../src/api/deps.py)) | ✅ |
 | **Шифрование at rest** | PostgreSQL AES-256, S3 SSE, Vault для ключей, шифрование payload в Qdrant | ✅ |
 | **Шифрование in transit** | TLS 1.3 для всех каналов, mTLS внутри кластера | ✅ |
-| **Регистрация событий (аудит)** | structlog → ELK, неизменяемость, retention 3+5 лет (`[src/core/audit_logger.py](../src/core/audit_logger.py)`) | ✅ |
+| **Регистрация событий (аудит)** | structlog → ELK, неизменяемость, retention 3+5 лет ([src/core/audit_logger.py](../src/core/audit_logger.py)) | ✅ |
 | **Очистка памяти и остаточной информации** | Контейнеры с `readOnlyRootFilesystem`, безопасное удаление временных файлов (через `tempfile` с удалением) | ✅ |
 | **Антивирусная защита** | На нодах K8s установлен Kaspersky Endpoint Security (или аналог) | ✅ |
 | **Резервное копирование** | pg_dump + WAL-G, снапшоты Qdrant, версионирование S3 | ✅ |
@@ -315,12 +315,12 @@ Multi-Agent Mass Recruitment Hub обрабатывает биометричес
 | 1 | Уведомление Роскомнадзора о начале обработки ПДн (ст. 22 152-ФЗ) | Подано, регистрационный номер получен | ✅ |
 | 2 | Утверждена и опубликована Политика обработки ПДн | Размещена на сайте компании | ✅ |
 | 3 | Получено согласие на обработку ПДн (ст. 6, 9 152-ФЗ) | `consent_152fz` и `consent_biometry` в БД, аудит-лог | ✅ |
-| 4 | Реализовано право на забвение (ст. 15 152-ФЗ) | Cascade deletion через `[deletion_service.py](../src/services/deletion_service.py)` | ✅ |
+| 4 | Реализовано право на забвение (ст. 15 152-ФЗ) | Cascade deletion через [deletion_service.py](../src/services/deletion_service.py) | ✅ |
 | 5 | Шифрование at rest (PostgreSQL, S3, Qdrant) | AES-256, SSE, Vault | ✅ |
 | 6 | Шифрование in transit (TLS 1.3, mTLS) | Настроено для всех каналов | ✅ |
 | 7 | Внедрён SIEM / аудит-лог (ст. 18.1, 22) | `structlog` + ELK Stack | ✅ |
-| 8 | Реализовано RBAC (роли admin, supervisor, hr) | `[src/api/deps.py](../src/api/deps.py)` | ✅ |
-| 9 | Анонимизация ПДн перед LLM/RAG (Presidio) | `[src/pii/anonymizer.py](../src/pii/anonymizer.py)` | ✅ |
+| 8 | Реализовано RBAC (роли admin, supervisor, hr) | [src/api/deps.py](../src/api/deps.py) | ✅ |
+| 9 | Анонимизация ПДн перед LLM/RAG (Presidio) | [src/pii/anonymizer.py](../src/pii/anonymizer.py) | ✅ |
 | 10 | Регулярное тестирование безопасности (SAST) | Semgrep в CI | ✅ |
 | 11 | Регулярное тестирование безопасности (DAST) | OWASP ZAP еженедельно (staging) | ⚠️ Частично |
 | 12 | Ежегодный пентест внешним подрядчиком | Запланирован на Q4 2026 | ❌ |
@@ -332,9 +332,9 @@ Multi-Agent Mass Recruitment Hub обрабатывает биометричес
 Multi-Agent Mass Recruitment Hub разработан с учётом всех актуальных требований российского законодательства и международных стандартов, что подтверждается полным покрытием мер защиты, аудитом и контролем доступа. PII-архитектура на базе Presidio гарантирует анонимизацию данных перед любым использованием в AI-пайплайне, а каскадное удаление обеспечивает право на забвение. Политика безопасности включает шифрование, RBAC, безопасную разработку и мониторинг инцидентов, что минимизирует риски утечек и штрафов.
 
 Данный документ является центральным артефактом для compliance-специалистов и аудиторов. Он дополняет другие руководства:
-- **[SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md](./SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md)** — бизнес-контекст и NFR, где зафиксированы требования к безопасности и надёжности.
-- **[ARCHITECTURE_AND_DATA_MODEL.md](./ARCHITECTURE_AND_DATA_MODEL.md)** — модель данных, retention и шифрование на уровне БД.
-- **[AI_AGENT_AND_ML_PIPELINE.md](./AI_AGENT_AND_ML_PIPELINE.md)** — fairness-аудит и этичность AI-решений.
-- **[DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md](./DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md)** — мониторинг и процедуры реагирования на инциденты.
+- [SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md](./SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md) — бизнес-контекст и NFR, где зафиксированы требования к безопасности и надёжности.
+- [ARCHITECTURE_AND_DATA_MODEL.md](./ARCHITECTURE_AND_DATA_MODEL.md) — модель данных, retention и шифрование на уровне БД.
+- [AI_AGENT_AND_ML_PIPELINE.md](./AI_AGENT_AND_ML_PIPELINE.md) — fairness-аудит и этичность AI-решений.
+- [DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md](./DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md) — мониторинг и процедуры реагирования на инциденты.
 
 Все реализованные меры безопасности задокументированы и готовы к предоставлению регулирующим органам.

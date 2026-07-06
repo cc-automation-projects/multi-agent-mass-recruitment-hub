@@ -68,7 +68,7 @@ Unit-тесты покрывают все основные модули сист
 
 ### 3.4. Pytest-маркеры
 
-В `[pyproject.toml](../pyproject.toml)` определены стандартные маркеры:
+В [pyproject.toml](../pyproject.toml) определены стандартные маркеры:
 - `unit` — unit-тесты (без внешних сервисов).
 - `asyncio` — асинхронные тесты (автоматически применяются к coroutine-функциям).
 - `integration` — интеграционные тесты (требуют внешних зависимостей, запускаются с моками).
@@ -266,8 +266,8 @@ Fairness-тесты проверяют, что AI-агенты не дискри
 
 ### 8.2. Инструменты и метрики
 
-- **Fairness-метрики:** рассчитываются в `[src/agents/analyst/fairness_metrics.py](../src/agents/analyst/fairness_metrics.py)` — `demographic_parity`, `disparate_impact`, `false_rejection_rate`.
-- **Пороговые значения:** Disparate Impact ≥0.8, False Rejection Rate ≤2% (заданы в `[src/core/config.py](../src/core/config.py)`).
+- **Fairness-метрики:** рассчитываются в [src/agents/analyst/fairness_metrics.py](../src/agents/analyst/fairness_metrics.py) — `demographic_parity`, `disparate_impact`, `false_rejection_rate`.
+- **Пороговые значения:** Disparate Impact ≥0.8, False Rejection Rate ≤2% (заданы в [src/core/config.py](../src/core/config.py)).
 - **Тесты:** используют синтетических кандидатов, создаваемых с помощью фабрик (fixtures). Результаты проверяются с помощью утверждений `assert`.
 
 ### 8.3. Пример теста
@@ -288,7 +288,7 @@ async def test_disparate_impact_gender():
     assert metrics["false_rejection_rate"] < 0.02
 ```
 
-Файл: `[tests/integration/test_analyst_e2e.py](../tests/integration/test_analyst_e2e.py)` (содержит подобные тесты).
+Файл: [tests/integration/test_analyst_e2e.py](../tests/integration/test_analyst_e2e.py) (содержит подобные тесты).
 
 ## 9. CI/CD-интеграция тестов
 
@@ -336,7 +336,7 @@ async def test_disparate_impact_gender():
 
 ## 10. Pytest-конфигурация ([pyproject.toml](../pyproject.toml))
 
-В `[pyproject.toml](../pyproject.toml)` заданы настройки pytest:
+В [pyproject.toml](../pyproject.toml) заданы настройки pytest:
 
 ```toml
 [tool.pytest.ini_options]
@@ -378,9 +378,9 @@ docker-compose down
 
 Данный документ является неотъемлемой частью экосистемы документации и тесно связан с:
 
-- **[SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md](./SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md)** — функциональные и нефункциональные требования, на основе которых построены тест-кейсы.
-- **[ARCHITECTURE_AND_DATA_MODEL.md](./ARCHITECTURE_AND_DATA_MODEL.md)** — модель данных и архитектура, используемые в тестах.
-- **[AI_AGENT_AND_ML_PIPELINE.md](./AI_AGENT_AND_ML_PIPELINE.md)** — логика агентов, которая проверяется в fairness-тестах.
-- **[DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md](./DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md)** — окружение для тестов и CI/CD интеграция.
+- [SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md](./SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md) — функциональные и нефункциональные требования, на основе которых построены тест-кейсы.
+- [ARCHITECTURE_AND_DATA_MODEL.md](./ARCHITECTURE_AND_DATA_MODEL.md) — модель данных и архитектура, используемые в тестах.
+- [AI_AGENT_AND_ML_PIPELINE.md](./AI_AGENT_AND_ML_PIPELINE.md) — логика агентов, которая проверяется в fairness-тестах.
+- [DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md](./DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md) — окружение для тестов и CI/CD интеграция.
 
 Все тесты реализованы или запланированы в соответствии с описанной стратегией, что обеспечивает уверенность в стабильности и надёжности системы в промышленной эксплуатации.

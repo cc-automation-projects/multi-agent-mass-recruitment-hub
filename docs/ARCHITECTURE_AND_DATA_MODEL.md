@@ -18,13 +18,13 @@
 
 На уровне контейнеров система состоит из следующих основных исполняемых модулей:
 
-- **API Gateway (FastAPI)** — точка входа для всех HTTP/WebSocket-запросов. Обрабатывает REST-запросы от фронтенда, webhook-уведомления от АТС и мессенджеров, а также устанавливает WebSocket-соединения для голосового пайплайна. Реализован в `[src/main.py](../src/main.py)`, использует роутеры из `src/api/` и middleware для аутентификации, rate limiting и аудита.
+- **API Gateway (FastAPI)** — точка входа для всех HTTP/WebSocket-запросов. Обрабатывает REST-запросы от фронтенда, webhook-уведомления от АТС и мессенджеров, а также устанавливает WebSocket-соединения для голосового пайплайна. Реализован в [src/main.py](../src/main.py), использует роутеры из `src/api/` и middleware для аутентификации, rate limiting и аудита.
 
 - **Оркестратор агентов (LangGraph)** — графовый движок, управляющий последовательностью вызовов пяти агентов. Координатор (`src/agents/coordinator/`) маршрутизирует кандидатов между агентами в зависимости от статуса скрининга. Каждый агент (`screener`, `interviewer`, `onboarding`, `analyst`) имеет собственный граф (`graph.py`) и узлы (`nodes.py`), реализованные на LangGraph.
 
 - **Voice Pipeline (FreeSWITCH + LiveKit)** — обеспечивает телефонную связь и WebRTC-обработку. FreeSWITCH (`infra/docker/freeswitch/`) выступает SIP-сервером с поддержкой до 3000 параллельных звонков на ноду, а LiveKit (`infra/livekit/`) управляет WebRTC-сессиями, adaptive barge-in и потоковой обработкой аудио (ASR → LLM → TTS).
 
-- **Celery Workers** — фоновые задачи, выполняющие длительные операции: транскрипция аудио (`src/tasks/`), работа AI-агента и запись в CRM. Используют Redis как брокер (`[src/celery_app.py](../src/celery_app.py)`).
+- **Celery Workers** — фоновые задачи, выполняющие длительные операции: транскрипция аудио (`src/tasks/`), работа AI-агента и запись в CRM. Используют Redis как брокер ([src/celery_app.py](../src/celery_app.py)).
 
 - **Хранилища**:
   - **PostgreSQL** — основная реляционная БД для кандидатов, кампаний, результатов интервью, аудит-логов и метрик fairness. Версия 16 с pgvector для геопоиска.
@@ -102,8 +102,8 @@ flowchart TB
 На уровне компонентов детализируем слои внутри контейнеров.
 
 **API Layer (`src/api/`):**
-- Роутеры: `[auth.py](../src/api/auth.py)` (JWT-аутентификация), `[campaigns.py](../src/api/campaigns.py)` (управление кампаниями), `[candidates.py](../src/api/candidates.py)` (CRUD кандидатов), `agents.py` (запуск/повтор агентов), `analytics.py` (метрики и fairness-отчёты), `[admin.py](../src/api/admin.py)` (импорт, веса моделей), `[deletion.py](../src/api/deletion.py)` (право на забвение), `[messenger_webhook.py](../src/api/messenger_webhook.py)`, `[telegram_webhook.py](../src/api/telegram_webhook.py)` (входящие сообщения от мессенджеров).
-- Middleware: CORS (`[src/main.py](../src/main.py)`), JWT-валидация (`[src/api/deps.py](../src/api/deps.py)`), rate limiting (планируется), аудит через structlog (`[src/core/audit_logger.py](../src/core/audit_logger.py)`).
+- Роутеры: [auth.py](../src/api/auth.py) (JWT-аутентификация), [campaigns.py](../src/api/campaigns.py) (управление кампаниями), [candidates.py](../src/api/candidates.py) (CRUD кандидатов), `agents.py` (запуск/повтор агентов), `analytics.py` (метрики и fairness-отчёты), [admin.py](../src/api/admin.py) (импорт, веса моделей), [deletion.py](../src/api/deletion.py) (право на забвение), [messenger_webhook.py](../src/api/messenger_webhook.py), [telegram_webhook.py](../src/api/telegram_webhook.py) (входящие сообщения от мессенджеров).
+- Middleware: CORS ([src/main.py](../src/main.py)), JWT-валидация ([src/api/deps.py](../src/api/deps.py)), rate limiting (планируется), аудит через structlog ([src/core/audit_logger.py](../src/core/audit_logger.py)).
 
 **Agent Layer (`src/agents/`):**
 - Пять агентов, каждый имеет файл `graph.py` и `nodes.py`:
@@ -116,17 +116,17 @@ flowchart TB
 
 **Services Layer (`src/services/`):**
 - `call_service.py` — управление звонками (создание, обновление статуса).
-- `[campaign_service.py](../src/services/campaign_service.py)` — CRUD кампаний.
+- [campaign_service.py](../src/services/campaign_service.py) — CRUD кампаний.
 - `transcription_service.py` — интеграция с Whisper ASR.
 - `validation_service.py` — валидация извлечённых данных (телефон, ИНН, email, дата, сумма).
 - `crm_service.py` — запись в Битрикс24 (через интеграции).
 - `rollback_service.py` — откат CRM-действий.
 - `analytics_service.py` — агрегация статистики.
-- `[calendar_service.py](../src/services/calendar_service.py)` — проверка доступности календарей HR.
-- `[handoff_service.py](../src/services/handoff_service.py)` — сохранение состояния диалога в Redis при переключении каналов.
-- `[deletion_service.py](../src/services/deletion_service.py)` — каскадное удаление данных кандидата.
-- `[semantic_cache.py](../src/services/semantic_cache.py)` — MVR-кэш для LLM.
-- `[propensity_dialer.py](../src/services/propensity_dialer.py)` — CatBoost-модель для выбора времени звонка.
+- [calendar_service.py](../src/services/calendar_service.py) — проверка доступности календарей HR.
+- [handoff_service.py](../src/services/handoff_service.py) — сохранение состояния диалога в Redis при переключении каналов.
+- [deletion_service.py](../src/services/deletion_service.py) — каскадное удаление данных кандидата.
+- [semantic_cache.py](../src/services/semantic_cache.py) — MVR-кэш для LLM.
+- [propensity_dialer.py](../src/services/propensity_dialer.py) — CatBoost-модель для выбора времени звонка.
 
 **Связи между слоями:** API → Services → Models/Integrations. API вызывает сервисы, сервисы работают с моделями и интеграциями. Celery workers также используют сервисы для выполнения фоновых задач.
 
@@ -229,7 +229,7 @@ sequenceDiagram
 На каждом шаге участвуют конкретные файлы:
 - **API:** `src/api/webhooks.py` → `handle_call_ended()`, вызывает `call_service.create_call()`.
 - **Транскрипция:** `src/workers/tasks.py` → `process_call_audio`, использует `transcription_service.transcribe_audio()`.
-- **AI-агент:** `src/workers/agent_worker.py` → `process_call_agent`, запускает `orchestrator.process_transcript()` из `[src/agents/orchestrator.py](../src/agents/orchestrator.py)`.
+- **AI-агент:** `src/workers/agent_worker.py` → `process_call_agent`, запускает `orchestrator.process_transcript()` из [src/agents/orchestrator.py](../src/agents/orchestrator.py).
 - **CRM Writer:** `src/workers/crm_writer_worker.py` → `process_crm_write`, использует `crm_service.write_to_crm()`.
 - **WebSocket:** `src/api/ws.py` и `src/services/ws_manager.py` для публикации событий через Redis pub/sub.
 
@@ -243,12 +243,12 @@ sequenceDiagram
 
 | № | Название | Решение | Обоснование (кратко) | Ссылка на код |
 |---|----------|---------|----------------------|---------------|
-| 0001 | Orchestration Framework | LangGraph > CrewAI | Детерминированность выполнения, typed-state, human-in-the-loop, conditional edges для юридической чистоты отбора | `src/agents/*/graph.py`, `[src/core/state.py](../src/core/state.py)` |
+| 0001 | Orchestration Framework | LangGraph > CrewAI | Детерминированность выполнения, typed-state, human-in-the-loop, conditional edges для юридической чистоты отбора | `src/agents/*/graph.py`, [src/core/state.py](../src/core/state.py) |
 | 0002 | Telephony Engine | FreeSWITCH > Asterisk | Поддержка 3000+ параллельных звонков на ноду, событийная архитектура (ESL), кластеризация, многопоточная модель | `src/telephony/`, `infra/docker/freeswitch/` |
-| 0003 | LLM Inference Optimization | vLLM + MVR-cache | PagedAttention, prefix‑cache aware routing, асимметричное кэширование промптов (снижение стоимости до 10 раз) | `src/llm/`, `[src/services/semantic_cache.py](../src/services/semantic_cache.py)` |
+| 0003 | LLM Inference Optimization | vLLM + MVR-cache | PagedAttention, prefix‑cache aware routing, асимметричное кэширование промптов (снижение стоимости до 10 раз) | `src/llm/`, [src/services/semantic_cache.py](../src/services/semantic_cache.py) |
 | 0004 | Voice Pipeline | LiveKit + Whisper + Silero | Низкая задержка, adaptive barge‑in (менее 300 мс), streaming-обработка ASR→LLM→TTS, WER <8% после fine‑tune | `src/voice/`, `infra/livekit/` |
 | 0005 | CI/CD Pipeline | GitHub Actions + Yandex CR + Helm | Автоматизация сборки, тестирования и деплоя, локализация в РФ-контуре (Yandex Cloud), управление через Helm | `.github/workflows/ci.yml`, `infra/helm/` |
-| 0006 | Deployment Strategy | Yandex Managed K8s + Helm + HPA | Managed control plane, горизонтальное масштабирование (HPA), отказоустойчивость, соответствие требованиям ФСТЭК | `infra/terraform/`, `infra/helm/[values-prod.yaml](../infra/helm/mass-recruit-hub/values-prod.yaml)` |
+| 0006 | Deployment Strategy | Yandex Managed K8s + Helm + HPA | Managed control plane, горизонтальное масштабирование (HPA), отказоустойчивость, соответствие требованиям ФСТЭК | `infra/terraform/`, [infra/helm/values-prod.yaml](../infra/helm/mass-recruit-hub/values-prod.yaml) |
 
 ## 3.2. Предлагаемые новые ADR (gap-анализ)
 
@@ -258,9 +258,9 @@ sequenceDiagram
 
 - **ADR-0008: Observability Stack** — выбор Prometheus для метрик (vs VictoriaMetrics), ELK для логов (vs Loki), Jaeger для трассировки (vs Tempo). Обоснование: единый стек с существующей инфраструктурой, зрелость решений. Связано: `infra/prometheus/`, `infra/grafana/`, `infra/elk/`.
 
-- **ADR-0009: Integration Pattern** — унификация подходов к интеграциям: REST для синхронных запросов (hh.ru, Avito, календари), Webhooks для асинхронных уведомлений (АТС, мессенджеры), gRPC для внутренних высоконагруженных вызовов (между агентами). Связано: `src/integrations/`, `[src/services/hr_integrations.py](../src/services/hr_integrations.py)`.
+- **ADR-0009: Integration Pattern** — унификация подходов к интеграциям: REST для синхронных запросов (hh.ru, Avito, календари), Webhooks для асинхронных уведомлений (АТС, мессенджеры), gRPC для внутренних высоконагруженных вызовов (между агентами). Связано: `src/integrations/`, [src/services/hr_integrations.py](../src/services/hr_integrations.py).
 
-- **ADR-0010: Semantic Caching Strategy** — выбор Qdrant для хранения семантического кэша против Redis Stack (с модулем поиска) или специализированных решений. Обоснование: российская разработка, высокая производительность при поиске по миллионам векторов, поддержка фильтрации по payload. Связано: `[src/services/semantic_cache.py](../src/services/semantic_cache.py)`.
+- **ADR-0010: Semantic Caching Strategy** — выбор Qdrant для хранения семантического кэша против Redis Stack (с модулем поиска) или специализированных решений. Обоснование: российская разработка, высокая производительность при поиске по миллионам векторов, поддержка фильтрации по payload. Связано: [src/services/semantic_cache.py](../src/services/semantic_cache.py).
 
 - **ADR-0011: Database Sharding & Replication** — стратегия масштабирования PostgreSQL и Qdrant при росте объёма данных (>10 млн кандидатов): партиционирование таблиц по дате, read‑replicas для аналитики, шардирование Qdrant (4 шарда, 2 реплики). Связано: `infra/terraform/`, `migrations/`.
 
@@ -437,7 +437,7 @@ erDiagram
 
 ### Таблица `candidates`
 
-Хранит основную информацию о кандидатах. Поля с ПДн (name, phone, resume_text) маскируются перед передачей в LLM через Presidio (`[src/pii/anonymizer.py](../src/pii/anonymizer.py)`). Поле `soft_deleted` используется для права на забвение (ст. 15 152-ФЗ).
+Хранит основную информацию о кандидатах. Поля с ПДн (name, phone, resume_text) маскируются перед передачей в LLM через Presidio ([src/pii/anonymizer.py](../src/pii/anonymizer.py)). Поле `soft_deleted` используется для права на забвение (ст. 15 152-ФЗ).
 
 | Поле | Тип | Nullable | Default | Описание |
 |------|-----|----------|---------|----------|
@@ -537,7 +537,7 @@ erDiagram
 
 ### Таблица `fairness_reports`
 
-Хранит результаты ежемесячного fairness-аудита, вычисляемые в Agent-Analyst (`[src/agents/analyst/fairness_metrics.py](../src/agents/analyst/fairness_metrics.py)`).
+Хранит результаты ежемесячного fairness-аудита, вычисляемые в Agent-Analyst ([src/agents/analyst/fairness_metrics.py](../src/agents/analyst/fairness_metrics.py)).
 
 | Поле | Тип | Nullable | Default | Описание |
 |------|-----|----------|---------|----------|
@@ -554,7 +554,7 @@ erDiagram
 
 ### Таблица `model_weights`
 
-Хранит историю изменений весов факторов пропенсити-модели (CatBoost). Позволяет HR-директору корректировать веса через админ-панель (`[src/static/index.html](../src/static/index.html)`).
+Хранит историю изменений весов факторов пропенсити-модели (CatBoost). Позволяет HR-директору корректировать веса через админ-панель ([src/static/index.html](../src/static/index.html)).
 
 | Поле | Тип | Nullable | Default | Описание |
 |------|-----|----------|---------|----------|
@@ -566,17 +566,17 @@ erDiagram
 
 ## 4.3. Особые поля и constraints
 
-- **consent_152fz** и **consent_biometry** — обязательные для начала скрининга. Валидация выполняется в методе `validate_consent` модели `Candidate` (`[src/core/models.py](../src/core/models.py)`). Если `consent_152fz = false`, скрининг блокируется.
-- **soft_deleted** — флаг для реализации права на забвение. При удалении данные не стираются физически, а помечаются, что позволяет сохранить аудиторский след. Каскадное удаление из связанных таблиц выполняется через `[src/services/deletion_service.py](../src/services/deletion_service.py)`.
+- **consent_152fz** и **consent_biometry** — обязательные для начала скрининга. Валидация выполняется в методе `validate_consent` модели `Candidate` ([src/core/models.py](../src/core/models.py)). Если `consent_152fz = false`, скрининг блокируется.
+- **soft_deleted** — флаг для реализации права на забвение. При удалении данные не стираются физически, а помечаются, что позволяет сохранить аудиторский след. Каскадное удаление из связанных таблиц выполняется через [src/services/deletion_service.py](../src/services/deletion_service.py).
 - **resume_original_hash** — SHA-256 хеш оригинального резюме. Используется для проверки целостности и аудита (например, чтобы убедиться, что резюме не было изменено после импорта).
 
 ## 4.4. Миграции и управление схемой
 
-Управление схемой осуществляется через **Alembic** (`[alembic.ini](../alembic.ini)`, `migrations/`). Существующие миграции:
+Управление схемой осуществляется через **Alembic** ([alembic.ini](../alembic.ini), `migrations/`). Существующие миграции:
 
-- **[001_initial_schema.py](../migrations/versions/001_initial_schema.py)** — создание таблиц `candidates`, `call_logs`, `interview_results`, `audit_logs`, `fairness_reports`.
-- **[002_add_model_weights.py](../migrations/versions/002_add_model_weights.py)** — добавление таблицы `model_weights` и начальной записи для `propensity_dialer`.
-- **[003_add_users.py](../migrations/versions/003_add_users.py)** — создание таблицы `users` и добавление администратора по умолчанию.
+- [001_initial_schema.py](../migrations/versions/001_initial_schema.py) — создание таблиц `candidates`, `call_logs`, `interview_results`, `audit_logs`, `fairness_reports`.
+- [002_add_model_weights.py](../migrations/versions/002_add_model_weights.py) — добавление таблицы `model_weights` и начальной записи для `propensity_dialer`.
+- [003_add_users.py](../migrations/versions/003_add_users.py) — создание таблицы `users` и добавление администратора по умолчанию.
 
 **Команды:**
 ```bash
@@ -585,11 +585,11 @@ alembic downgrade -1   # откатить на одну миграцию
 alembic revision --autogenerate -m "описание"  # создать новую миграцию
 ```
 
-**Политика миграций:** все миграции должны быть обратно совместимыми (не удалять колонки, не изменять nullable без default). Перед деплоем в production выполняется `alembic upgrade head` в Kubernetes Job (см. `[scripts/deploy-prod.sh](../scripts/deploy-prod.sh)`).
+**Политика миграций:** все миграции должны быть обратно совместимыми (не удалять колонки, не изменять nullable без default). Перед деплоем в production выполняется `alembic upgrade head` в Kubernetes Job (см. [scripts/deploy-prod.sh](../scripts/deploy-prod.sh)).
 
 ## 4.5. Retention политика
 
-Настройки хранятся в `[src/core/config.py](../src/core/config.py)`:
+Настройки хранятся в [src/core/config.py](../src/core/config.py):
 
 - **Данные кандидатов:** до отзыва согласия + 1 год (параметр `CANDIDATE_DATA_RETENTION_DAYS`).
 - **Аудит-логи:** 3 года on-line (Elasticsearch), 5 лет архив (S3) — `AUDIT_LOG_RETENTION_DAYS = 1095`.
@@ -658,7 +658,7 @@ flowchart LR
 - **Назначение:** импорт резюме и откликов.
 - **Протокол:** REST API, аутентификация OAuth 2.0 (или API Key).
 - **Частота:** on-demand (по запросу администратора).
-- **Реализация:** `[src/integrations/job_boards.py](../src/integrations/job_boards.py)` — функция `fetch_resumes_from_hh()`.
+- **Реализация:** [src/integrations/job_boards.py](../src/integrations/job_boards.py) — функция `fetch_resumes_from_hh()`.
 - **Обработка ошибок:** retry 3 раза с exponential backoff через tenacity.
 - **Мониторинг:** метрики `mrh_integration_requests_total{platform="hh"}` и `mrh_integration_errors_total{platform="hh"}`.
 
@@ -666,68 +666,68 @@ flowchart LR
 - **Назначение:** импорт откликов.
 - **Протокол:** REST API, API Key.
 - **Частота:** polling каждые 5 минут (поскольку Avito не поддерживает webhook).
-- **Реализация:** `[src/integrations/job_boards.py](../src/integrations/job_boards.py)` — `fetch_resumes_from_avito()` (заглушка).
+- **Реализация:** [src/integrations/job_boards.py](../src/integrations/job_boards.py) — `fetch_resumes_from_avito()` (заглушка).
 - **Retry:** аналогично hh.ru.
 
 ### MAX (Сбер)
 - **Назначение:** обмен сообщениями с кандидатами, handoff.
 - **Протокол:** REST API, JWT-аутентификация.
 - **Частота:** on-demand (при handoff или отправке уведомлений).
-- **Реализация:** `[src/services/hr_integrations.py](../src/services/hr_integrations.py)` — `send_max_message()`.
+- **Реализация:** [src/services/hr_integrations.py](../src/services/hr_integrations.py) — `send_max_message()`.
 - **Особенности:** основной канал для РФ.
 
 ### Telegram
 - **Назначение:** исходящие уведомления, приём сообщений через webhook.
 - **Протокол:** Bot API (HTTPS), Bot Token.
 - **Частота:** real-time.
-- **Реализация:** `[src/bot/telegram.py](../src/bot/telegram.py)` (бот) и `[src/api/telegram_webhook.py](../src/api/telegram_webhook.py)` (webhook).
+- **Реализация:** [src/bot/telegram.py](../src/bot/telegram.py) (бот) и [src/api/telegram_webhook.py](../src/api/telegram_webhook.py) (webhook).
 - **Пример:** отправка сообщения через `send_telegram_message()`.
 
 ### VK
 - **Назначение:** исходящие сообщения (fallback для Telegram).
 - **Протокол:** VK API, Service Token.
 - **Частота:** real-time.
-- **Реализация:** `[src/services/hr_integrations.py](../src/services/hr_integrations.py)` — `send_vk_message()`.
+- **Реализация:** [src/services/hr_integrations.py](../src/services/hr_integrations.py) — `send_vk_message()`.
 
 ### 1С:ЗУП
 - **Назначение:** экспорт данных о нанятых сотрудниках после онбординга.
 - **Протокол:** REST API (если 1С опубликован), RPA-слой (если API нет).
 - **Частота:** batch daily (или по запросу).
-- **Реализация:** `[src/services/hr_integrations.py](../src/services/hr_integrations.py)` — функция `send_to_1c()` (заглушка).
+- **Реализация:** [src/services/hr_integrations.py](../src/services/hr_integrations.py) — функция `send_to_1c()` (заглушка).
 
 ### Google Calendar / Яндекс.Календарь
 - **Назначение:** проверка доступности HR, создание событий собеседований.
 - **Протокол:** REST API, OAuth 2.0.
 - **Частота:** on-demand.
-- **Реализация:** `[src/services/calendar_service.py](../src/services/calendar_service.py)` — функции `get_google_free_busy()`, `get_yandex_free_busy()`, `check_calendar_availability()`.
+- **Реализация:** [src/services/calendar_service.py](../src/services/calendar_service.py) — функции `get_google_free_busy()`, `get_yandex_free_busy()`, `check_calendar_availability()`.
 
 ### SIP-оператор
 - **Назначение:** исходящие звонки через FreeSWITCH.
 - **Протокол:** SIP (UDP/TCP), регистрация на SIP-транке.
 - **Частота:** on-demand (при обзвоне).
-- **Реализация:** `[src/telephony/freeswitch_client.py](../src/telephony/freeswitch_client.py)` — `make_call()`.
+- **Реализация:** [src/telephony/freeswitch_client.py](../src/telephony/freeswitch_client.py) — `make_call()`.
 
 ## 5.3. Сводная таблица интеграций
 
 | Интеграция | Протокол | Auth | Направление | Частота | Реализация |
 |------------|----------|------|-------------|---------|------------|
-| hh.ru | REST | OAuth 2.0 / API Key | Импорт резюме | on-demand | `[src/integrations/job_boards.py](../src/integrations/job_boards.py)` |
-| Avito | REST | API Key | Импорт откликов | polling 5 мин | `[src/integrations/job_boards.py](../src/integrations/job_boards.py)` |
-| MAX | REST | JWT | Импорт/Экспорт | on-demand | `[src/services/hr_integrations.py](../src/services/hr_integrations.py)` |
-| Telegram | Bot API | Bot Token | Исходящие уведомления | real-time | `[src/bot/telegram.py](../src/bot/telegram.py)`, `[src/api/telegram_webhook.py](../src/api/telegram_webhook.py)` |
-| VK | VK API | Service Token | Исходящие сообщения | real-time | `[src/services/hr_integrations.py](../src/services/hr_integrations.py)` |
-| 1С:ЗУП | REST / RPA | Локальная сеть | Экспорт нанятых | batch daily | `[src/services/hr_integrations.py](../src/services/hr_integrations.py)` |
-| Google Calendar | REST | OAuth 2.0 | Чтение/запись | on-demand | `[src/services/calendar_service.py](../src/services/calendar_service.py)` |
-| Яндекс.Календарь | REST | OAuth 2.0 | Чтение/запись | on-demand | `[src/services/calendar_service.py](../src/services/calendar_service.py)` |
-| SIP-оператор | SIP | — | Исходящие звонки | on-demand | `[src/telephony/freeswitch_client.py](../src/telephony/freeswitch_client.py)` |
+| hh.ru | REST | OAuth 2.0 / API Key | Импорт резюме | on-demand | [src/integrations/job_boards.py](../src/integrations/job_boards.py) |
+| Avito | REST | API Key | Импорт откликов | polling 5 мин | [src/integrations/job_boards.py](../src/integrations/job_boards.py) |
+| MAX | REST | JWT | Импорт/Экспорт | on-demand | [src/services/hr_integrations.py](../src/services/hr_integrations.py) |
+| Telegram | Bot API | Bot Token | Исходящие уведомления | real-time | [src/bot/telegram.py](../src/bot/telegram.py), [src/api/telegram_webhook.py](../src/api/telegram_webhook.py) |
+| VK | VK API | Service Token | Исходящие сообщения | real-time | [src/services/hr_integrations.py](../src/services/hr_integrations.py) |
+| 1С:ЗУП | REST / RPA | Локальная сеть | Экспорт нанятых | batch daily | [src/services/hr_integrations.py](../src/services/hr_integrations.py) |
+| Google Calendar | REST | OAuth 2.0 | Чтение/запись | on-demand | [src/services/calendar_service.py](../src/services/calendar_service.py) |
+| Яндекс.Календарь | REST | OAuth 2.0 | Чтение/запись | on-demand | [src/services/calendar_service.py](../src/services/calendar_service.py) |
+| SIP-оператор | SIP | — | Исходящие звонки | on-demand | [src/telephony/freeswitch_client.py](../src/telephony/freeswitch_client.py) |
 
 ## 5.4. Единая политика обработки ошибок и retry
 
 Для всех интеграций применяется единая политика:
 
-- **Retry:** 3 попытки с exponential backoff (0.5s, 1s, 2s, max 10s) через библиотеку tenacity (`[src/services/hr_integrations.py](../src/services/hr_integrations.py)` и `[src/integrations/job_boards.py](../src/integrations/job_boards.py)`).
-- **Fallback:** если внешний API недоступен, запрос сохраняется в Redis-очередь и повторяется позже (см. `[src/services/handoff_service.py](../src/services/handoff_service.py)` для handoff).
-- **Алерты:** уведомление в Telegram при >5% ошибок за 5 минут для любой платформы (правило в `[infra/prometheus/alerts.yaml](../infra/prometheus/alerts.yaml)`).
+- **Retry:** 3 попытки с exponential backoff (0.5s, 1s, 2s, max 10s) через библиотеку tenacity ([src/services/hr_integrations.py](../src/services/hr_integrations.py) и [src/integrations/job_boards.py](../src/integrations/job_boards.py)).
+- **Fallback:** если внешний API недоступен, запрос сохраняется в Redis-очередь и повторяется позже (см. [src/services/handoff_service.py](../src/services/handoff_service.py) для handoff).
+- **Алерты:** уведомление в Telegram при >5% ошибок за 5 минут для любой платформы (правило в [infra/prometheus/alerts.yaml](../infra/prometheus/alerts.yaml)).
 
 ---
 
@@ -735,6 +735,6 @@ flowchart LR
 
 Архитектура Multi-Agent Mass Recruitment Hub выстроена вокруг гибкого графового оркестратора, поддерживающего детерминированные бизнес-процессы с возможностью ручного вмешательства. Модель данных PostgreSQL обеспечивает надёжное хранение всех сущностей с учётом требований 152-ФЗ, а интеграции с внешними системами реализованы с едиными подходами к отказоустойчивости и наблюдаемости.
 
-Представленный в данном документе материал является логическим продолжением **[SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md](./SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md)**, где описаны бизнес-контекст и функциональные требования. Для более глубокого погружения в работу каждого агента и голосового пайплайна рекомендуется обратиться к документам **AGENT_PIPELINE.md** и **VOICE_PIPELINE.md**, а для API-контрактов — к **API_REFERENCE.md**. Развёртывание и эксплуатация детализированы в **DEPLOYMENT_GUIDE.md**.
+Представленный в данном документе материал является логическим продолжением [SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md](./SYSTEM_SPECIFICATION_AND_PRODUCT_GUIDE.md), где описаны бизнес-контекст и функциональные требования. Для более глубокого погружения в работу каждого агента и голосового пайплайна рекомендуется обратиться к документу [`AI_AGENT_AND_ML_PIPELINE.md`](./AI_AGENT_AND_ML_PIPELINE.md), а для API-контрактов — к [API_AND_USER_INTERFACE_SPECIFICATION.md](./API_AND_USER_INTERFACE_SPECIFICATION.md). Развёртывание и эксплуатация детализированы в [DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md](./DEPLOYMENT_OBSERVABILITY_AND_ADMIN_GUIDE.md).
 
 Все архитектурные решения зафиксированы в реестре ADR (раздел 3) и подлежат пересмотру при изменении требований или появлении новых технологий.
